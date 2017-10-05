@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Individual Home</title>
+</head>
+<body>
+<header>
+    <h1>Bank</h1>
+    {% if user.is_authenticated %}
+      Hi {{ user.username }}!
+      <a href="{% url 'logout' %}">logout</a>
+    {% endif %}
+  </header>
+Individual Home
+</body>
+</html>

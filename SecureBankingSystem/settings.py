@@ -26,11 +26,13 @@ SECRET_KEY = 'zw^p6wv863&-0b%_z2$hd)zl84l^!ppxpxzbuif1#3!mcfmzrn'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+ROLEPERMISSIONS_MODULE = 'SecureBankingSystem.roles'
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'rolepermissions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,7 +56,7 @@ ROOT_URLCONF = 'SecureBankingSystem.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,3 +120,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGIN_REDIRECT_URL = 'home'
