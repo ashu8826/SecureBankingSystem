@@ -1,0 +1,85 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
+
+<div>
+	<h2>Welcome {{Individual.FirstName}} {{Individual.LastName}}</h2>
+		<div>
+		<table>
+
+			<tr>
+				<td>
+                    <form id = "debitForm" action="Debit" method="post">{% csrf_token %}
+                        <input type="hidden" name="AccNo" value="{{ Account.AccNo }}" />
+                        <a href="#" onclick="document.forms['debitForm'].submit();" > Debit </a>
+                    </form>
+                </td>
+                <td>
+                    <form id = "CreditForm" action="Credit" method="post">{% csrf_token %}
+                        <input type="hidden" name="AccNo" value="{{ Account.AccNo }}" />
+                        <a href="#" onclick="document.forms['CreditForm'].submit();" > Credit </a>
+                    </form>
+                </td>
+                <td>
+                    <form id = "TransferForm" action="Transfer" method="post">{% csrf_token %}
+                        <input type="hidden" name="AccNo" value="{{ Account.AccNo }}" />
+                        <a href="#" onclick="document.forms['TransferForm'].submit();" > Transfer </a>
+                    </form>
+                </td>
+                <td>
+                    <form id = "PaymentForm" action="Payment" method="post">{% csrf_token %}
+                        <input type="hidden" name="AccNo" value="{{ Account.AccNo }}" />
+                        <a href="#" onclick="document.forms['PaymentForm'].submit();" > Payment </a>
+                    </form>
+                </td>
+                <td>
+                    <form id = "DownloadpageForm" action="Downloadpage" method="post">{% csrf_token %}
+                        <input type="hidden" name="AccNo" value="{{ Account.AccNo }}" />
+                        <a href="#" onclick="document.forms['DownloadpageForm'].submit();" > Download Account Information </a>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a href="{% url 'IndividualHome' %}"> Back</a>
+                </td>
+                <td>
+					<a href="{% url 'logout' %}">Logout</a>
+				</td>
+            </tr>
+		</table>
+</div>
+
+<div>
+		<table>
+        <tr>
+            <td>Account Number: {{ Account.AccNo }}<br />
+                Account Type: {{ Account.AccType }}<br />
+                Your Account Balance: {{ Account.Balance }}<br />
+							<br />
+        </tr>
+        <tr><td><table>
+			<tr>
+				<th>Date</th>
+                <th>Type</th>
+                <th>From Account</th>
+                <th>To Account</th>
+                <th>Status</th>
+                <th>Amount</th>
+			</tr>
+            {% for transaction in Transactions %}
+                <tr>
+                    <td>{{ transaction.TransDate }}</td>
+                    <td>{{ transaction.TransType }}</td>
+                    <td>{{ transaction.SendAcc }}</td>
+                    <td>{{ transaction.RecAcc }}</td>
+                    <td>{{ transaction.TransStatus }}</td>
+                    <td>{{ transaction.Amount }}</td>
+                </tr>
+            {% endfor %}
+        </table></td></tr>
+		</table>
+		</div>
+		</div>
+
+
+</body></html>

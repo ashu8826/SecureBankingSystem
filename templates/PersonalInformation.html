@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Information</title>
+</head>
+<body>
+    <h3>
+		<a href="{% url 'IndividualHome' %}">Back</a>
+	</h3>
+	<h2>Personal Information</h2>
+
+    <table>
+        <tr>
+            <td><b>First Name</b></td>
+				<td>{{Individual.FirstName}}</td>
+        </tr>
+        <tr>
+            <td><b>Last Name</b></td>
+				<td>{{Individual.LastName}}</td>
+        </tr>
+        <tr>
+            <td><b>Email</b></td>
+				<td>{{Individual.Email}}</td>
+        </tr>
+        <tr>
+            <td><b>Address</b></td>
+				<td>{{Individual.Address}}</td>
+        </tr>
+        <tr>
+            <td><b>City</b></td>
+				<td>{{Individual.City}}</td>
+        </tr>
+        <tr>
+            <td><b>State</b></td>
+				<td>{{Individual.State}}</td>
+        </tr>
+        <tr>
+            <td><b>Zip Code</b></td>
+				<td>{{Individual.Zip}}</td>
+        </tr>
+    </table>
+</body>
+</html>

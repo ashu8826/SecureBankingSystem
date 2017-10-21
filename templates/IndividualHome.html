@@ -1,17 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Individual Home</title>
-</head>
-<body>
-<header>
-    <h1>Bank</h1>
-    {% if user.is_authenticated %}
-      Hi {{ user.username }}!
-      <a href="{% url 'logout' %}">logout</a>
-    {% endif %}
-  </header>
-Individual Home
-</body>
-</html>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
+
+<div>
+	<h2>Welcome {{Individual.FirstName}} {{Individual.LastName}}</h2>
+		<div>
+		<table>
+			<tr>
+				<td><a href="Info"> Personal Information</a>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="{% url 'logout' %}">Logout</a>
+				</td>
+			</tr>
+		</table>
+</div>
+
+
+
+<div>
+		<table>
+			<tr>
+				<th>Account Number</th>
+				<th>Account Type</th>
+				<th>Balance</th>
+			</tr>
+            {% for account in Accounts %}
+                <tr>
+                    <td>
+                        <form id = "accountForm_{{account.id}}" action="Account" method="post">{% csrf_token %}
+                            <input type="hidden" name="AccNo" value="{{ account.AccNo }}" />
+                        <a href="#" onclick="document.forms['accountForm_{{account.id}}'].submit();" > {{ account.AccNo }} </a>
+                        </form>
+                    </td>
+                    <td>{{account.AccType}}</td>
+                    <td>{{account.Balance}}</td>
+                </tr>
+            {% endfor %}
+		</table>
+		</div>
+		</div>
+
+
+</body></html>
