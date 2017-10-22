@@ -18,7 +18,13 @@
             </tr>
             <tr>
                 <td> <input type="submit" value="Submit"> </td>
-                <td><a href="{% url 'IndividualHome' %}"> Cancel </a></td>
+                <td>
+                    {% if Individual.UserType == 'INDIVIDUAL' %}
+                        <a href="{% url 'IndividualHome' %}">Cancel</a>
+                    {% else %}
+                        <a href="{% url 'MerchantHome' %}">Cancel</a>
+                    {% endif %}
+                </td>
             </tr>
             </table>
             {{ Message }}

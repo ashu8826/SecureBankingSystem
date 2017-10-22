@@ -1,17 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Home</title>
-</head>
-<body>
-<header>
-    <h1>Bank</h1>
-    {% if user.is_authenticated %}
-      Hi {{ user.username }}!
-      <a href="{% url 'logout' %}">logout</a>
-    {% endif %}
-  </header>
-Admin Home
-</body>
-</html>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
+
+<div>
+	<h2>Welcome {{Individual.FirstName}} {{Individual.LastName}}</h2>
+		<div>
+		<table>
+			<tr>
+				<td><a href="InternalUserLookup"> Internal Users </a>
+				</td>
+
+                <td><a href="Logs"> Logs</a>
+				</td>
+
+                <td><a href="EditInfo"> Edit Personal Info</a>
+				</td>
+
+                <td><a href="PII"> PII</a>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="{% url 'logout' %}">Logout</a>
+				</td>
+			</tr>
+		</table>
+</div>
+
+
+
+<div>
+		<table>
+			<tr>
+				<th>Task Id</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Tid</th>
+                <th>Complete Task</th>
+			</tr>
+            {% for task in Tasks %}
+                <tr>
+                    <td>{{task.id}}</td>
+                    <td>{{task.Message}}</td>
+                    <td>{{task.Status}}</td>
+                    <td>{{task.TaskDetail.id}}</td>
+                    <td>
+                        <form id = "taskForm_{{task.id}}" action="CompleteTask" method="post">{% csrf_token %}
+                            <input type="hidden" name="TaskId" value="{{ task.id }}" />
+                        <a href="#" onclick="document.forms['taskForm_{{task.id}}'].submit();" > OK </a>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+		</table>
+		</div>
+		</div>
+
+
+</body></html>

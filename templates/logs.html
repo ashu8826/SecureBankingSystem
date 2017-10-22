@@ -1,0 +1,35 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><META http-equiv="Content-Type" content="text/html; charset=utf-8"></head><body>
+
+<div>
+    <h3>
+        {% if Individual.UserType == 'ADMIN' %}
+            <a href="{% url 'AdminHome' %}">Back</a>
+        {% elif Individual.UserType == 'MANAGER' %}
+            <a href="{% url 'ManagerHome' %}">Back</a>
+        {% else %}
+            <a href="{% url 'EmployeeHome' %}">Back</a>
+        {% endif %}
+	</h3>
+	<h2>System Logs</h2>
+
+<div>
+		<table>
+			<tr>
+				<th>Log Id</th>
+			    <th>Message</th>
+			    <th>Date</th>
+			</tr>
+            {% for log in Logs %}
+                <tr>
+                    <td>{{ log.id }}</td>
+                    <td>{{ log.Detail }}</td>
+                    <td>{{ log.CreatedDate }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+		</div>
+		</div>
+
+
+</body></html>

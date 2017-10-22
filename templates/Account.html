@@ -40,7 +40,11 @@
             </tr>
             <tr>
                 <td>
-                    <a href="{% url 'IndividualHome' %}"> Back</a>
+                    {% if Individual.UserType == 'INDIVIDUAL' %}
+                        <a href="{% url 'IndividualHome' %}">Back</a>
+                    {% else %}
+                        <a href="{% url 'MerchantHome' %}">Back</a>
+                    {% endif %}
                 </td>
                 <td>
 					<a href="{% url 'logout' %}">Logout</a>

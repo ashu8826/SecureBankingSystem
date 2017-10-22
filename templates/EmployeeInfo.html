@@ -6,10 +6,12 @@
 </head>
 <body>
     <h3>
-        {% if Individual.UserType == 'INDIVIDUAL' %}
-            <a href="{% url 'IndividualHome' %}">Back</a>
+        {% if Individual.UserType == 'ADMIN' %}
+            <a href="{% url 'AdminHome' %}">Back</a>
+        {% elif Individual.UserType == 'MANAGER' %}
+            <a href="{% url 'ManagerHome' %}">Back</a>
         {% else %}
-            <a href="{% url 'MerchantHome' %}">Back</a>
+            <a href="{% url 'EmployeeHome' %}">Back</a>
         {% endif %}
 	</h3>
 	<h2>Personal Information</h2>
@@ -42,6 +44,10 @@
         <tr>
             <td><b>Zip Code</b></td>
 				<td>{{Individual.Zip}}</td>
+        </tr>
+        <tr>
+            <td><b>SSN</b></td>
+				<td>{{Individual.SSN.SSN}}</td>
         </tr>
     </table>
 </body>

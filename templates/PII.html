@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Personal Information</title>
+</head>
+<body>
+    <h3>
+        {% if Individual.UserType == 'ADMIN' %}
+            <a href="{% url 'AdminHome' %}">Back</a>
+        {% elif Individual.UserType == 'MANAGER' %}
+            <a href="{% url 'ManagerHome' %}">Back</a>
+        {% else %}
+            <a href="{% url 'EmployeeHome' %}">Back</a>
+        {% endif %}
+	</h3>
+
+	<h2>Employee Information</h2>
+
+    {% if AdminRequest == 'POST' %}
+
+        <table>
+        <tr>
+            <td><b>SSN</b></td>
+				<td>{{SSN.SSN}}</td>
+        </tr>
+        <tr>
+            <td><b>Visa Status</b></td>
+				<td>{{SSN.VisaStatus}}</td>
+        </tr>
+    </table>
+
+    {% else %}
+
+        <form action="PII" method="post"> {% csrf_token %}
+        <table>
+            <tr>
+		        <td>SSN: </td>
+		        <td>
+                    <input type="text" name="inputSSN" maxlength="30"/>
+		        </td>
+	        </tr>
+            <tr>
+                <td> <input type="submit" value="Submit"> </td>
+            </tr>
+            <tr>
+                <td>{{ Message }}</td>
+            </tr>
+        </table>
+    </form>
+    {% endif %}
+</body>
+</html>
