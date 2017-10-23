@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction Enquiry</title>
+</head>
+<body>
+    <h3>
+        {% if Individual.UserType == 'ADMIN' %}
+            <a href="{% url 'AdminHome' %}">Back</a>
+        {% elif Individual.UserType == 'MANAGER' %}
+            <a href="{% url 'ManagerHome' %}">Back</a>
+        {% else %}
+            <a href="{% url 'EmployeeHome' %}">Back</a>
+        {% endif %}
+	</h3>
+
+	<h2>Transaction Details</h2>
+
+    {% if AdminRequest == 'POST' %}
+        <table>
+			<tr>
+                <th>Transaction ID</th>
+				<th>Date</th>
+                <th>Type</th>
+                <th>From Account</th>
+                <th>To Account</th>
+                <th>Status</th>
+                <th>Amount</th>
+			</tr>
+            {% for transaction in Transactions %}
+                <tr>
+                    <td>{{ transaction.id }}</td>
+                    <td>{{ transaction.TransDate }}</td>
+                    <td>{{ transaction.TransType }}</td>
+                    <td>{{ transaction.SendAcc }}</td>
+                    <td>{{ transaction.RecAcc }}</td>
+                    <td>{{ transaction.TransStatus }}</td>
+                    <td>{{ transaction.Amount }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+
+        <form action="TransactionInquiry" method="post"> {% csrf_token %}
+        <table>
+            <tr>
+		        <td>Account Number: </td>
+		        <td>
+                    <input type="text" name="AccNo" maxlength="30"/>
+		        </td>
+	        </tr>
+            <tr>
+                <td> <input type="submit" value="Submit"> </td>
+            </tr>
+            <tr>
+                <td>{{ Message }}</td>
+            </tr>
+        </table>
+    </form>
+    {% endif %}
+
+</body>
+</html>

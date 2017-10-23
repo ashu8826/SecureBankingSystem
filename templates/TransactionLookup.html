@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction Lookup</title>
+</head>
+<body>
+    <h3>
+        {% if Individual.UserType == 'ADMIN' %}
+            <a href="{% url 'AdminHome' %}">Back</a>
+        {% elif Individual.UserType == 'MANAGER' %}
+            <a href="{% url 'ManagerHome' %}">Back</a>
+        {% else %}
+            <a href="{% url 'EmployeeHome' %}">Back</a>
+        {% endif %}
+	</h3>
+
+	<h2>Transaction Details</h2>
+
+    {% if AdminRequest == 'POST' %}
+
+        <form id = "TModifyForm" action="TModify" method="post">{% csrf_token %}
+        <table>
+			<tr>
+                <th>Transaction ID</th>
+				<th>Date</th>
+                <th>Type</th>
+                <th>From Account</th>
+                <th>To Account</th>
+                <th>Status</th>
+                <th>Amount</th>
+			</tr>
+                <tr>
+                    <td><input type="text" name="Tid" value="{{ Transaction.id }}" disabled></td>
+                    <td><input type="text" name="TTransDate" value="{{ Transaction.TransDate }}" disabled></td>
+                    <td><input type="text" name="TTransType" value="{{ Transaction.TransType }}" disabled></td>
+                    <td><input type="text" name="TSendAcc" value="{{ Transaction.SendAcc }}" disabled></td>
+                    <td><input type="text" name="TRecAcc" value="{{ Transaction.RecAcc }}" disabled></td>
+                    <td><input type="text" name="TTransStatus" value="{{ Transaction.TransStatus }}" disabled></td>
+                    <td><input type="text" id="TAmount" name="TAmount" value="{{ Transaction.Amount }}"></td>
+                    <td><input type="hidden" name="TransID" value="{{ Transaction.id }}" />
+                        <input type="submit" value="Modify"></td>
+                </tr>
+        </table>
+        {{ Message1 }}
+        </form>
+
+        <table>
+
+			<tr>
+				<td>
+                    <form id = "TAuthorizeForm" action="TAuthorize" method="post">{% csrf_token %}
+                        <input type="hidden" name="TransID" value="{{ Transaction.id }}" />
+                        <input type="submit" value="Authorize">
+                    </form>
+                </td>
+                <td>
+                    <form id = "TCancelForm" action="TCancel" method="post">{% csrf_token %}
+                        <input type="hidden" name="TransID" value="{{ Transaction.id }}" />
+                        <input type="submit" value="Cancel">
+                    </form>
+                </td>
+            </tr>
+		</table>
+        {{ Message2 }}
+
+    {% else %}
+
+        <form action="TransactionLookup" method="post"> {% csrf_token %}
+        <table>
+            <tr>
+		        <td>Transaction ID: </td>
+		        <td>
+                    <input type="text" name="TransactionID" maxlength="30"/>
+		        </td>
+	        </tr>
+            <tr>
+                <td> <input type="submit" value="Submit"> </td>
+            </tr>
+            <tr>
+                <td>{{ Message }}</td>
+            </tr>
+        </table>
+    </form>
+    {% endif %}
+
+</body>
+</html>

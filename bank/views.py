@@ -12,6 +12,7 @@ from os.path import abspath, dirname
 from Crypto.PublicKey import RSA
 import random
 import string
+from random import randint
 
 def AdminHome(request):
     if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN]):
@@ -71,6 +72,210 @@ def EmployeeHome(request):
         individual = InternalUser.objects.get(Username=request.user.username)
         tasks = Task.objects.filter(Assignee=individual, Status='notcompleted')
         return render(request, 'EmployeeHome.html', {"Individual": individual, "Tasks": tasks})
+    return render(request, 'home.html')
+
+def TransactionLookup(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_MANAGER, ROLE_EMPLOYEE]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            try:
+                transaction = Transaction.objects.get(id=request.POST.get('TransactionID'))
+                return render(request, 'TransactionLookup.html',
+                          {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction})
+            except Transaction.DoesNotExist:
+                return render(request, 'TransactionLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": "Invalid Transaction ID!"})
+        else:
+            return render(request, 'TransactionLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": ""})
+    return render(request, 'home.html')
+
+def TAuthorize(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_MANAGER, ROLE_EMPLOYEE]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            transaction = Transaction.objects.get(id=request.POST.get('TransID'))
+            try:
+                sendAccount = BankAccount.objects.get(AccNo=transaction.SendAcc)
+                recvAccount = BankAccount.objects.get(AccNo=transaction.RecAcc)
+                if sendAccount.AccStatus == "active" and recvAccount.AccStatus == "active":
+                    if transaction.TransType == "credit":
+                        recvAccount.Balance = float(sendAccount.Balance) + float(transaction.Amount)
+                        recvAccount.save()
+                        transaction.TransStatus = "approved"
+                        transaction.save()
+                        l = SystemLogs(CreatedDate=datetime.now(),
+                                       Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                           transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                           transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                        l.save()
+                        l = SystemLogs(CreatedDate=datetime.now(),
+                                       Detail='Updated - ' + str(transaction.Amount) + ' credited to account ' + str(recvAccount.AccNo))
+                        l.save()
+                    elif transaction.TransType == "debit":
+                        if float(recvAccount.Balance) >= float(transaction.Amount):
+                            sendAccount.Balance = float(recvAccount.Balance) - float(transaction.Amount)
+                            sendAccount.save()
+                            transaction.TransStatus = "approved"
+                            transaction.save()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                               transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                               transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                            l.save()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - ' + str(transaction.Amount) + ' debited from account ' + str(
+                                               sendAccount.AccNo))
+                            l.save()
+                        else:
+                            transaction.TransStatus = "declined"
+                            transaction.save()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                               transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                               transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                            l.save()
+                            return render(request, 'TransactionLookup.html',
+                                          {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
+                                           "Message2": "Transaction Declined"})
+                    else:
+                        if float(sendAccount.Balance) >= float(transaction.Amount):
+                            sendAccount.Balance = float(sendAccount.Balance) - float(transaction.Amount)
+                            sendAccount.save()
+                            recvAccount.Balance = float(recvAccount.Balance) + float(transaction.Amount)
+                            recvAccount.save()
+                            transaction.TransStatus = "approved"
+                            transaction.save()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                               transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                               transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                            l.save()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - ' + str(transaction.Amount) + ' deducted from account ' + str(
+                                               sendAccount.AccNo))
+                            l.save()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - ' + str(transaction.Amount) + ' added in account ' + str(
+                                               recvAccount.AccNo))
+                            l.save()
+                        else:
+                            transaction.TransStatus = "declined"
+                            transaction.save()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                               transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                               transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                            l.save()
+                            return render(request, 'TransactionLookup.html',
+                                          {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
+                                           "Message2": "Transaction Declined"})
+                    if has_role(request.user, [ROLE_MANAGER]):
+                        return redirect('ManagerHome')
+                    else:
+                        return redirect('EmployeeHome')
+                else:
+                    transaction.TransStatus = "declined"
+                    transaction.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                       Transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                       transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                    l.save()
+                    return render(request, 'TransactionLookup.html',
+                                  {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
+                                   "Message2": "Transaction Declined"})
+            except BankAccount.DoesNotExist:
+                transaction.TransStatus = "declined"
+                transaction.save()
+                l = SystemLogs(CreatedDate=datetime.now(),
+                               Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                   Transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                   transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                l.save()
+                return render(request, 'TransactionLookup.html',
+                              {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
+                               "Message2": "Transaction Declined"})
+            return render(request, 'TransactionLookup.html',
+                          {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction})
+        else:
+            return render(request, 'TransactionLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": ""})
+    return render(request, 'home.html')
+
+def TModify(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_MANAGER, ROLE_EMPLOYEE]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            transaction = Transaction.objects.get(id=request.POST.get('TransID'))
+            amount = request.POST.get('TAmount')
+            if(isNum(amount) and float(amount) > 0):
+                transaction.Amount = float(amount)
+                transaction.save()
+                l = SystemLogs(CreatedDate=datetime.now(),
+                               Detail='Modified - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                   amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                   transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                l.save()
+                if has_role(request.user, [ROLE_MANAGER]):
+                    return redirect('ManagerHome')
+                else:
+                    return redirect('EmployeeHome')
+            else:
+                return render(request, 'TransactionLookup.html',
+                          {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction, "Message1": "Amount should be valid number greater than 0"})
+        else:
+            return render(request, 'TransactionLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": ""})
+    return render(request, 'home.html')
+
+def TCancel(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_MANAGER, ROLE_EMPLOYEE]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            transaction = Transaction.objects.get(id=request.POST.get('TransID'))
+            try:
+                task = Task.objects.get(TaskDetail=transaction)
+                task.delete()
+                l = SystemLogs(CreatedDate=datetime.now(),
+                               Detail='Deleted - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                l.save()
+            except Task.DoesNotExist:
+                return render(request, 'TransactionLookup.html',
+                              {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
+                               "Message2": "Cannot cancel cleared transactions"})
+            if transaction.TransStatus == "pending" or transaction.TransStatus == "processing":
+                transaction.delete()
+                l = SystemLogs(CreatedDate=datetime.now(),
+                               Detail='Deleted - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                   transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                   transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                l.save()
+                if has_role(request.user, [ROLE_MANAGER]):
+                    return redirect('ManagerHome')
+                else:
+                    return redirect('EmployeeHome')
+            else:
+                return render(request, 'TransactionLookup.html',
+                              {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
+                               "Message2": "Cannot cancel approved or declined transactions"})
+        else:
+            return render(request, 'TransactionLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": ""})
+    return render(request, 'home.html')
+
+def TransactionInquiry(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_MANAGER, ROLE_EMPLOYEE]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            if isNum(request.POST.get('AccNo')):
+                try:
+                    account = BankAccount.objects.get(AccNo=request.POST.get('AccNo'))
+                    transactions = Transaction.objects.filter(Q(SendAcc=account.AccNo) | Q(RecAcc=account.AccNo))
+                    return render(request, 'TransactionInquiry.html',
+                              {"Individual": individual, "AdminRequest": "POST", "Transactions": transactions})
+                except BankAccount.DoesNotExist:
+                    return render(request, 'TransactionInquiry.html', {"Individual": individual, "AdminRequest": "GET", "Message": "Invalid Account!"})
+            else:
+                return render(request, 'TransactionInquiry.html',
+                              {"Individual": individual, "AdminRequest": "GET", "Message": "Invalid Account!"})
+        else:
+            return render(request, 'TransactionInquiry.html', {"Individual": individual, "AdminRequest": "GET", "Message": ""})
     return render(request, 'home.html')
 
 def CompleteTask(request):
@@ -151,20 +356,67 @@ def doDebit(request):
             account = BankAccount.objects.get(User=individual, AccNo=request.POST.get('AccNo'))
             data = request.POST.get('Amount')
             if(isNum(data) and float(data) > 0 and float(account.Balance) >= float(data)):
-                t = Transaction(TransDate=datetime.now(), TransType='debit', Amount=float(data), TransStatus='cleared', SendAcc=account.AccNo, RecAcc=account.AccNo)
-                t.save()
-                account.Balance = float(account.Balance) - float(data)
-                account.save()
-                l = SystemLogs(CreatedDate=datetime.now(),
-                         Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(data) + ', Status: ' + t.TransType + ', Send Account: ' + str(t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
-                l.save()
-                l = SystemLogs(CreatedDate=datetime.now(),
-                         Detail='Updated - '+str(data)+' deducted from account '+str(account.AccNo))
-                l.save()
-                if has_role(request.user, [ROLE_INDIVIDUAL]):
-                    return redirect('IndividualHome')
+                if(float(data) > 500):
+                    t = Transaction(TransDate=datetime.now(), TransType='debit', Amount=float(data),
+                                    TransStatus='pending',
+                                    SendAcc=account.AccNo, RecAcc=account.AccNo)
+                    t.save()
+                    task = Task(TaskDetail=t, Message='general', Status='notcompleted')
+                    employees = InternalUser.objects.filter(UserType='EMPLOYEE')
+                    managers = InternalUser.objects.filter(UserType='MANAGER')
+                    admin = InternalUser.objects.filter(UserType='ADMIN')
+                    if(float(data) > 10000):
+                        if managers:
+                            managerCount = randint(0, managers.count()-1)
+                            task.Assignee = managers[managerCount]
+                            task.save()
+                        else:
+                            adminCount = randint(0, admin.count() - 1)
+                            task.Assignee = admin[adminCount]
+                            task.save()
+                    else:
+                        if employees:
+                            employeeCount = randint(0, employees.count() - 1)
+                            task.Assignee = employees[employeeCount]
+                            task.save()
+                        elif managers:
+                            managerCount = randint(0, managers.count()-1)
+                            task.Assignee = managers[managerCount]
+                            task.save()
+                        else:
+                            adminCount = randint(0, admin.count() - 1)
+                            task.Assignee = admin[adminCount]
+                            task.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(
+                                       data) + ', Status: ' + t.TransType + ', Send Account: ' + str(
+                                       t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
+                    l.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                    l.save()
+                    if has_role(request.user, [ROLE_INDIVIDUAL]):
+                        return redirect('IndividualHome')
+                    else:
+                        return redirect('MerchantHome')
                 else:
-                    return redirect('MerchantHome')
+                    t = Transaction(TransDate=datetime.now(), TransType='debit', Amount=float(data),
+                                    TransStatus='cleared', SendAcc=account.AccNo, RecAcc=account.AccNo)
+                    t.save()
+                    account.Balance = float(account.Balance) - float(data)
+                    account.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(
+                                       data) + ', Status: ' + t.TransType + ', Send Account: ' + str(
+                                       t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
+                    l.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Updated - ' + str(data) + ' deducted from account ' + str(account.AccNo))
+                    l.save()
+                    if has_role(request.user, [ROLE_INDIVIDUAL]):
+                        return redirect('IndividualHome')
+                    else:
+                        return redirect('MerchantHome')
             else:
                 return render(request, 'debit.html', {"Individual": individual, "Account": account, "Message": "Amount should be valid number between 0 and balance in account"})
         return render(request, 'home.html')
@@ -186,21 +438,68 @@ def doCredit(request):
             account = BankAccount.objects.get(User=individual, AccNo=request.POST.get('AccNo'))
             data = request.POST.get('Amount')
             if (isNum(data) and float(data) > 0):
-                t = Transaction(TransDate=datetime.now(), TransType='credit', Amount=float(data), TransStatus='cleared',
-                                SendAcc=account.AccNo, RecAcc=account.AccNo)
-                t.save()
-                account.Balance = float(account.Balance) + float(data)
-                account.save()
-                l = SystemLogs(CreatedDate=datetime.now(),
-                         Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(data) + ', Status: ' + t.TransType + ', Send Account: ' + str(t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
-                l.save()
-                l = SystemLogs(CreatedDate=datetime.now(),
-                         Detail='Updated - ' + str(data) + ' credited to account ' + str(account.AccNo))
-                l.save()
-                if has_role(request.user, [ROLE_INDIVIDUAL]):
-                    return redirect('IndividualHome')
+                if float(data) > 500:
+                    t = Transaction(TransDate=datetime.now(), TransType='credit', Amount=float(data),
+                                    TransStatus='pending',
+                                    SendAcc=account.AccNo, RecAcc=account.AccNo)
+                    t.save()
+                    task = Task(TaskDetail=t, Message='general', Status='notcompleted')
+                    employees = InternalUser.objects.filter(UserType='EMPLOYEE')
+                    managers = InternalUser.objects.filter(UserType='MANAGER')
+                    admin = InternalUser.objects.filter(UserType='ADMIN')
+                    if (float(data) > 10000):
+                        if managers:
+                            managerCount = randint(0, managers.count() - 1)
+                            task.Assignee = managers[managerCount]
+                            task.save()
+                        else:
+                            adminCount = randint(0, admin.count() - 1)
+                            task.Assignee = admin[adminCount]
+                            task.save()
+                    else:
+                        if employees:
+                            employeeCount = randint(0, employees.count() - 1)
+                            task.Assignee = employees[employeeCount]
+                            task.save()
+                        elif managers:
+                            managerCount = randint(0, managers.count() - 1)
+                            task.Assignee = managers[managerCount]
+                            task.save()
+                        else:
+                            adminCount = randint(0, admin.count() - 1)
+                            task.Assignee = admin[adminCount]
+                            task.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(
+                                       data) + ', Status: ' + t.TransType + ', Send Account: ' + str(
+                                       t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
+                    l.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                    l.save()
+                    if has_role(request.user, [ROLE_INDIVIDUAL]):
+                        return redirect('IndividualHome')
+                    else:
+                        return redirect('MerchantHome')
                 else:
-                    return redirect('MerchantHome')
+                    t = Transaction(TransDate=datetime.now(), TransType='credit', Amount=float(data),
+                                    TransStatus='cleared',
+                                    SendAcc=account.AccNo, RecAcc=account.AccNo)
+                    t.save()
+                    account.Balance = float(account.Balance) + float(data)
+                    account.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(
+                                       data) + ', Status: ' + t.TransType + ', Send Account: ' + str(
+                                       t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
+                    l.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Updated - ' + str(data) + ' credited to account ' + str(account.AccNo))
+                    l.save()
+                    if has_role(request.user, [ROLE_INDIVIDUAL]):
+                        return redirect('IndividualHome')
+                    else:
+                        return redirect('MerchantHome')
             else:
                 return render(request, 'credit.html', {"Individual": individual, "Account": account,
                                                        "Message": "Amount should be valid number greater than 0"})
@@ -241,16 +540,42 @@ def doTransfer(request):
                         dec_data = privKeyObj.decrypt(enc_data)
                         if dec_data == plainText:
                             t = Transaction(TransDate=datetime.now(), TransType='transfer', Amount=float(data),
-                                            TransStatus='processing',
+                                            TransStatus='pending',
                                             SendAcc=account.AccNo, RecAcc=toAccount.AccNo)
                             t.save()
                             task = Task(TaskDetail=t, Message='general', Status='notcompleted')
-                            task.save()
+                            employees = InternalUser.objects.filter(UserType='EMPLOYEE')
+                            managers = InternalUser.objects.filter(UserType='MANAGER')
+                            admin = InternalUser.objects.filter(UserType='ADMIN')
+                            if (float(data) > 10000):
+                                if managers:
+                                    managerCount = randint(0, managers.count() - 1)
+                                    task.Assignee = managers[managerCount]
+                                    task.save()
+                                else:
+                                    adminCount = randint(0, admin.count() - 1)
+                                    task.Assignee = admin[adminCount]
+                                    task.save()
+                            else:
+                                if employees:
+                                    employeeCount = randint(0, employees.count() - 1)
+                                    task.Assignee = employees[employeeCount]
+                                    task.save()
+                                elif managers:
+                                    managerCount = randint(0, managers.count() - 1)
+                                    task.Assignee = managers[managerCount]
+                                    task.save()
+                                else:
+                                    adminCount = randint(0, admin.count() - 1)
+                                    task.Assignee = admin[adminCount]
+                                    task.save()
                             l = SystemLogs(CreatedDate=datetime.now(),
-                                     Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(data) + ', Status: ' + t.TransType + ', Send Account: ' + str(t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
+                                           Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(
+                                               data) + ', Status: ' + t.TransType + ', Send Account: ' + str(
+                                               t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
                             l.save()
                             l = SystemLogs(CreatedDate=datetime.now(),
-                                     Detail='Added - Task Detail: '+task.TaskDetail+', Message: '+task.Message+', Status: '+task.Status)
+                                           Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
                             l.save()
                             if has_role(request.user, [ROLE_INDIVIDUAL]):
                                 return redirect('IndividualHome')
@@ -330,16 +655,42 @@ def doPayment(request):
                         dec_data = privKeyObj.decrypt(enc_data)
                         if dec_data == plainText:
                             t = Transaction(TransDate=datetime.now(), TransType='payment', Amount=float(data),
-                                            TransStatus='processing',
+                                            TransStatus='pending',
                                             SendAcc=account.AccNo, RecAcc=toAccount.AccNo)
                             t.save()
                             task = Task(TaskDetail=t, Message='general', Status='notcompleted')
-                            task.save()
+                            employees = InternalUser.objects.filter(UserType='EMPLOYEE')
+                            managers = InternalUser.objects.filter(UserType='MANAGER')
+                            admin = InternalUser.objects.filter(UserType='ADMIN')
+                            if (float(data) > 10000):
+                                if managers:
+                                    managerCount = randint(0, managers.count() - 1)
+                                    task.Assignee = managers[managerCount]
+                                    task.save()
+                                else:
+                                    adminCount = randint(0, admin.count() - 1)
+                                    task.Assignee = admin[adminCount]
+                                    task.save()
+                            else:
+                                if employees:
+                                    employeeCount = randint(0, employees.count() - 1)
+                                    task.Assignee = employees[employeeCount]
+                                    task.save()
+                                elif managers:
+                                    managerCount = randint(0, managers.count() - 1)
+                                    task.Assignee = managers[managerCount]
+                                    task.save()
+                                else:
+                                    adminCount = randint(0, admin.count() - 1)
+                                    task.Assignee = admin[adminCount]
+                                    task.save()
                             l = SystemLogs(CreatedDate=datetime.now(),
-                                     Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(data) + ', Status: ' + t.TransType + ', Send Account: ' + str(t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
+                                           Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(
+                                               data) + ', Status: ' + t.TransType + ', Send Account: ' + str(
+                                               t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
                             l.save()
                             l = SystemLogs(CreatedDate=datetime.now(),
-                                     Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status)
+                                           Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
                             l.save()
                             if has_role(request.user, [ROLE_INDIVIDUAL]):
                                 return redirect('IndividualHome')
