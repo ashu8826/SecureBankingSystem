@@ -18,41 +18,24 @@
 	<h2>Employee Information</h2>
 
     {% if AdminRequest == 'POST' %}
-
+        <form action="InternalUserLookup" method="post"> {% csrf_token %}
+        {{ IndividualForm.as_p }}
         <table>
-        <tr>
-            <td><b>First Name</b></td>
-				<td>{{InternalUser.FirstName}}</td>
-        </tr>
-        <tr>
-            <td><b>Last Name</b></td>
-				<td>{{InternalUser.LastName}}</td>
-        </tr>
-        <tr>
-            <td><b>Email</b></td>
-				<td>{{InternalUser.Email}}</td>
-        </tr>
-        <tr>
-            <td><b>Address</b></td>
-				<td>{{InternalUser.Address}}</td>
-        </tr>
-        <tr>
-            <td><b>City</b></td>
-				<td>{{InternalUser.City}}</td>
-        </tr>
-        <tr>
-            <td><b>State</b></td>
-				<td>{{InternalUser.State}}</td>
-        </tr>
-        <tr>
-            <td><b>Zip Code</b></td>
-				<td>{{InternalUser.Zip}}</td>
-        </tr>
         <tr>
             <td><b>SSN</b></td>
 				<td>{{InternalUser.SSN.SSN}}</td>
         </tr>
-    </table>
+        <tr>
+            <td>
+                    <input type="submit" name="Save" value="Save">
+            </td>
+            <td>
+                    <input type="submit" name="Delete" value="Delete">
+            </td>
+        </tr>
+        </table>
+        <input type="hidden" name="EmployeeUsername" value={{ InternalUser.Username }}>
+        </form>
 
     {% else %}
 
@@ -72,6 +55,9 @@
             </tr>
         </table>
     </form>
+        <form action="AddInternalUser" method="post"> {% csrf_token %}
+            <input type="submit" value="Add New Internal User">
+        </form>
     {% endif %}
 </body>
 </html>

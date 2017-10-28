@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>External User</title>
+</head>
+<body>
+    <h3>
+        {% if Individual.UserType == 'ADMIN' %}
+            <a href="{% url 'AdminHome' %}">Back</a>
+        {% elif Individual.UserType == 'MANAGER' %}
+            <a href="{% url 'ManagerHome' %}">Back</a>
+        {% else %}
+            <a href="{% url 'EmployeeHome' %}">Back</a>
+        {% endif %}
+	</h3>
+
+	<h2>External User</h2>
+
+    <h3> Delete User</h3>
+
+
+    <form action="ExternalUserAccess" method="post"> {% csrf_token %}
+        <table>
+            <tr>
+		        <td>External User Username: </td>
+		        <td>
+                    <input type="text" name="EmployeeUsername" maxlength="30"/>
+		        </td>
+	        </tr>
+            <tr>
+                <td> <input type="submit" name="Delete" value="Delete"> </td>
+            </tr>
+            <tr>
+                <td>{{ Message }}</td>
+            </tr>
+        </table>
+    </form>
+
+    <h3>Add New User</h3>
+    <form action="ExternalUserAccess" method="post"> {% csrf_token %}
+            {{ Form1.as_p }}
+            <select name="UserType">
+                <option value="INDIVIDUAL" selected="selected">INDIVIDUAL USER</option>
+                <option value="MERCHANT">MERCHANT</option>
+            </select>
+            <input type="submit" name="Add" value="Add New Internal User">
+    </form>
+</body>
+</html>

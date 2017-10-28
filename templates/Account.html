@@ -34,7 +34,7 @@
                 <td>
                     <form id = "DownloadpageForm" action="Downloadpage" method="post">{% csrf_token %}
                         <input type="hidden" name="AccNo" value="{{ Account.AccNo }}" />
-                        <a href="#" onclick="document.forms['DownloadpageForm'].submit();" > Download Account Information </a>
+                        <a href="#" onclick="document.forms['DownloadpageForm'].submit();" > Download Statement </a>
                     </form>
                 </td>
             </tr>

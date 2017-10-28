@@ -33,6 +33,21 @@ class InternalUser(models.Model):
     AccessPrivilege = models.CharField(max_length=30, default='RE1')
     PIIAccess = models.IntegerField()
 
+class UserAccess(models.Model):
+    Username = models.CharField(max_length = 50)
+    FirstName = models.CharField(max_length = 50)
+    LastName = models.CharField(max_length = 50)
+    Email = models.EmailField()
+    Address = models.CharField(max_length = 200)
+    City = models.CharField(max_length = 20)
+    State = models.CharField(max_length = 20)
+    Zip = models.IntegerField()
+    UserType = models.CharField(max_length = 50)
+    UserOperation = models.CharField(max_length=50)
+
+class UserDelete(models.Model):
+    Username = models.CharField(max_length = 50)
+
 class BankAccount(models.Model):
     AccNo = models.IntegerField()
     Balance = models.FloatField()

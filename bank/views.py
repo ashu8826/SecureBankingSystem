@@ -2,17 +2,24 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from rolepermissions.checkers import has_role
+from rolepermissions.roles import assign_role
+from django.contrib.auth.models import User
+
 
 from SecureBankingSystem.roles import *
 from bank.models import *
+from bank.forms import *
 from django.db.models import Q
 from datetime import datetime
+from django.http import HttpResponse
 import os
 from os.path import abspath, dirname
+import csv
 from Crypto.PublicKey import RSA
 import random
 import string
 from random import randint
+from django.template import loader, Context
 
 def AdminHome(request):
     if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN]):
@@ -28,18 +35,233 @@ def Logs(request):
         return render(request, 'logs.html', {"Individual": individual, "Logs": logs})
     return render(request, 'home.html')
 
+def AddExternalUser(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+
+            if 'Add' in request.POST:
+                form1 = UserCreationForm(request.POST)
+                username = request.POST.get('userNo')
+                ua = UserAccess.objects.get(Username=username)
+                if(form1.is_valid()):
+                    form1.save()
+                    user = User.objects.get(username=form1.cleaned_data.get('username'))
+                    u = ExternalUser(Username=user.username, FirstName=ua.FirstName, LastName=ua.LastName, Email=ua.Email,
+                                     Address=ua.Address, City=ua.City, State=ua.State, Zip=ua.Zip, UserType=ua.UserType)
+                    RSAkey = RSA.generate(1024)
+                    binPrivKey = RSAkey.exportKey()
+                    binPubKey = RSAkey.publickey().exportKey()
+                    u.PublicKey = binPubKey
+                    u.save()
+                    loc = abspath(dirname(__file__)) + '\media\_' + u.Username + '_PrivateKey'
+                    with open(loc, 'wb+') as pem_out:
+                        pem_out.write(binPrivKey)
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '
+                                          + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: '
+                                          + str(u.Zip) + ', UserType: ' + u.UserType)
+                    l.save()
+                    if(u.UserType == 'INDIVIDUAL'):
+                        assign_role(user, ROLE_INDIVIDUAL)
+                    else:
+                        assign_role(user, ROLE_MERCHANT)
+                    UserAccess.objects.filter(Username=username, UserOperation='add').delete()
+                    addUsers = UserAccess.objects.filter(UserOperation='add')
+                    modifyUsers = UserAccess.objects.filter(UserOperation='modify')
+                    deleteUsers = UserDelete.objects.all()
+                    return render(request, 'ExternalUserRequest.html',
+                                  {"Individual": individual, "AddUsers": addUsers, "ModifyUsers": modifyUsers,
+                                   "DeleteUsers": deleteUsers})
+                else:
+                    form1 = UserCreationForm()
+                    username = request.POST.get('userNo')
+                    return render(request, 'AddExternalUser.html',
+                                  {"Individual": individual, "Form1": form1, "Username": username})
+            else:
+                form1 = UserCreationForm()
+                username = request.POST.get('userNo')
+                return  render(request, 'AddExternalUser.html', {"Individual": individual, "Form1":form1, "Username":username})
+        else:
+            addUsers = UserAccess.objects.filter(UserOperation='add')
+            modifyUsers = UserAccess.objects.filter(UserOperation='modify')
+            deleteUsers = UserDelete.objects.all()
+            return render(request, 'ExternalUserRequest.html',
+                          {"Individual": individual, "AddUsers": addUsers, "ModifyUsers": modifyUsers,
+                           "DeleteUsers": deleteUsers})
+    return render(request, 'home.html')
+
+def ExternalUserRequest(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            if 'Modify' in request.POST:
+                username = request.POST.get('userNo')
+                u = ExternalUser.objects.get(Username=username)
+                ua = UserAccess.objects.get(Username=username)
+                u.FirstName = ua.FirstName
+                u.LastName = ua.LastName
+                u.Email = ua.Email
+                u.City = ua.City
+                u.Address = ua.Address
+                u.State = ua.State
+                u.Zip = ua.Zip
+                u.save()
+                l = SystemLogs(CreatedDate=datetime.now(),
+                               Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '
+                                      + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: '
+                                      + str(u.Zip) + ', UserType: ' + u.UserType)
+                l.save()
+                UserAccess.objects.filter(Username=username, UserOperation='modify').delete()
+                addUsers = UserAccess.objects.filter(UserOperation='add')
+                modifyUsers = UserAccess.objects.filter(UserOperation='modify')
+                deleteUsers = UserDelete.objects.all()
+                return render(request, 'ExternalUserRequest.html',
+                              {"Individual": individual, "AddUsers": addUsers, "ModifyUsers": modifyUsers,
+                               "DeleteUsers": deleteUsers})
+            else:
+                username = request.POST.get('userNo')
+                u = ExternalUser.objects.get(Username=username)
+                accounts = BankAccount.objects.filter(User=u)
+                for account in accounts:
+                    account.delete()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Deleted - Bank Account: ' + str(account.AccNo) + ', Balance:' + str(account.Balance) + ', Type: ' + account.AccType + ', Open Date: '
+                                          + str(account.OpenDate) + ', Status: ' + account.AccStatus)
+                    l.save()
+                u.delete()
+                l = SystemLogs(CreatedDate=datetime.now(),
+                               Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '
+                                      + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: '
+                                      + str(u.Zip) + ', UserType: ' + u.UserType)
+                l.save()
+                UserDelete.objects.filter(Username=username).delete()
+                addUsers = UserAccess.objects.filter(UserOperation='add')
+                modifyUsers = UserAccess.objects.filter(UserOperation='modify')
+                deleteUsers = UserDelete.objects.all()
+                return render(request, 'ExternalUserRequest.html',
+                              {"Individual": individual, "AddUsers": addUsers, "ModifyUsers": modifyUsers,
+                               "DeleteUsers": deleteUsers})
+        else:
+            addUsers = UserAccess.objects.filter(UserOperation='add')
+            modifyUsers = UserAccess.objects.filter(UserOperation='modify')
+            deleteUsers = UserDelete.objects.all()
+            return render(request, 'ExternalUserRequest.html',
+                          {"Individual": individual, "AddUsers": addUsers, "ModifyUsers": modifyUsers, "DeleteUsers": deleteUsers})
+    return render(request, 'home.html')
+
 def InternalUserLookup(request):
     if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN]):
         individual = InternalUser.objects.get(Username=request.user.username)
         if request.method == "POST":
-            try:
+            if 'Save' in request.POST:
                 internalUser = InternalUser.objects.get(Username=request.POST.get('EmployeeUsername'))
-                return render(request, 'InternalUserLookup.html',
-                          {"Individual": individual, "AdminRequest": "POST", "InternalUser": internalUser})
-            except InternalUser.DoesNotExist:
-                return render(request, 'InternalUserLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": "Invalid username!"})
+                internalUserForm = InternalUserForm(request.POST, instance=internalUser)
+                if internalUserForm.is_valid():
+                    internalUserForm.save()
+                    e = InternalUser.objects.get(Username=request.POST.get('EmployeeUsername'))
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Modified - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: '
+                                          + str(e.Email) + ', Address: ' + e.Address + ', City: ' + e.City + ', State: ' + e.State + ', Zip: '
+                                          + str(e.Zip) + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
+                    l.save()
+                    return render(request, 'InternalUserLookup.html',
+                                  {"Individual": individual, "AdminRequest": "POST", "InternalUser": internalUser,
+                                   "IndividualForm": internalUserForm})
+                else:
+                    internalUserForm = InternalUserForm(instance=internalUser)
+                    return render(request, 'InternalUserLookup.html',
+                                  {"Individual": individual, "AdminRequest": "POST", "InternalUser": internalUser,
+                                   "IndividualForm": internalUserForm})
+            elif 'Delete' in request.POST:
+                internalUser = InternalUser.objects.get(Username=request.POST.get('EmployeeUsername'))
+                user = User.objects.get(username=internalUser.Username)
+                tasks = Task.objects.filter(Assignee=internalUser)
+                admin = InternalUser.objects.filter(UserType='ADMIN')
+                piiinfo = internalUser.SSN
+                piiinfo.delete()
+                for task in tasks:
+                    adminCount = randint(0, admin.count() - 1)
+                    task.Assignee = admin[adminCount]
+                    task.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Updated - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                    l.save()
+                internalUser.delete()
+                user.delete()
+                e = InternalUser.objects.get(Username=request.POST.get('EmployeeUsername'))
+                l = SystemLogs(CreatedDate=datetime.now(),
+                               Detail='Deleted - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: '
+                                      + str(e.Email) + ', Address: ' + e.Address + ', City: ' + e.City + ', State: ' + e.State + ', Zip: '
+                                      + str(e.Zip) + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
+                l.save()
+                return render(request, 'InternalUserLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": ""})
+            else:
+                try:
+                    internalUser = InternalUser.objects.get(Username=request.POST.get('EmployeeUsername'))
+                    internalUserForm = InternalUserForm(instance=internalUser)
+                    return render(request, 'InternalUserLookup.html',
+                              {"Individual": individual, "AdminRequest": "POST", "InternalUser": internalUser,  "IndividualForm": internalUserForm})
+                except InternalUser.DoesNotExist:
+                    return render(request, 'InternalUserLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": "Invalid username!"})
         else:
             return render(request, 'InternalUserLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": ""})
+    return render(request, 'home.html')
+
+def AddInternalUser(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            if 'Add' in request.POST:
+                form1 = UserCreationForm(request.POST)
+                form2 = PIIInfoForm(request.POST)
+                form3 = InternalUserForm(request.POST)
+                if(form1.is_valid() == False):
+                    form1 = UserCreationForm()
+                    return render(request, 'AddInternalUser.html',
+                                  {"Individual": individual, "Form1": form1, "Form2": form2, "Form3": form3})
+                if (form2.is_valid() == False):
+                    form2 = PIIInfoForm(request.POST)
+                    return render(request, 'AddInternalUser.html',
+                                  {"Individual": individual, "Form1": form1, "Form2": form2, "Form3": form3})
+                if(form1.is_valid() and form2.is_valid() and form3.is_valid()):
+                    form1.save()
+                    form2.save()
+                    user = User.objects.get(username=form1.cleaned_data.get('username'))
+                    p = PIIInfo.objects.get(SSN=form2.data.get('SSN'))
+                    e = InternalUser(Username=user.username, FirstName=form3.data.get('FirstName'), LastName=form3.data.get('LastName'),
+                                     Email=form3.data.get('Email'), Address=form3.data.get('Address'), City=form3.data.get('City'),
+                                     State=form3.data.get('State'), Zip=form3.data.get('Zip'), SSN=p, PIIAccess=0)
+                    e.UserType = request.POST.get('UserType')
+                    e.save()
+                    l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Added - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: '
+                                          + str(e.Email) + ', Address: ' + e.Address + + ', City: ' + e.City  + ', State: ' + e.State  + ', Zip: '
+                                          + str(e.Zip)  + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
+                    l.save()
+                    if(e.UserType == 'ADMIN'):
+                        assign_role(user, ROLE_ADMIN)
+                    elif(e.UserType == 'MANAGER'):
+                        assign_role(user, ROLE_MANAGER)
+                    else:
+                        assign_role(user, ROLE_EMPLOYEE)
+                    return render(request, 'InternalUserLookup.html',
+                                  {"Individual": individual, "AdminRequest": "GET", "Message": ""})
+                else:
+                    form1 = UserCreationForm()
+                    form2 = PIIInfoForm()
+                    form3 = InternalUserForm()
+                    return render(request, 'AddInternalUser.html',
+                                  {"Individual": individual, "Form1": form1, "Form2": form2, "Form3": form3})
+            else:
+                form1 = UserCreationForm()
+                form2 = PIIInfoForm()
+                form3 = InternalUserForm()
+                return  render(request, 'AddInternalUser.html', {"Individual": individual, "Form1":form1, "Form2":form2, "Form3":form3})
+
+        else:
+            return render(request, 'InternalUserLookup.html',
+                          {"Individual": individual, "AdminRequest": "GET", "Message": ""})
     return render(request, 'home.html')
 
 def PII(request):
@@ -296,10 +518,64 @@ def CompleteTask(request):
         return render(request, 'home.html')
     return render(request, 'home.html')
 
+def ExternalUserAccess(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN, ROLE_MANAGER, ROLE_EMPLOYEE]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            if 'Delete' in request.POST:
+                try:
+                    externalUser = ExternalUser.objects.get(Username=request.POST.get('EmployeeUsername'))
+                    userDelete = UserDelete(Username=externalUser.Username)
+                    userDelete.save()
+                    if has_role(request.user, [ROLE_ADMIN]):
+                        return redirect('AdminHome')
+                    elif has_role(request.user, [ROLE_MANAGER]):
+                        return redirect('ManagerHome')
+                    else:
+                        return redirect('EmployeeHome')
+                except ExternalUser.DoesNotExist:
+                    form1 = UserAccessForm()
+                    return render(request, 'ExternalUserLookup.html',
+                                  {"Individual": individual, "Message": "", "Form1": form1,  "Message": "Invalid Username"})
+            else:
+                form1 = UserAccessForm(request.POST)
+                if form1.is_valid():
+                    ua = UserAccess(Username="add", FirstName=form1.data.get('FirstName'),
+                                    LastName=form1.data.get('LastName'),
+                                    Email=form1.data.get('Email'),
+                                    Address=form1.data.get('Address'),
+                                    City=form1.data.get('City'),
+                                    State=form1.data.get('State'), Zip=form1.data.get('Zip'))
+                    ua.UserType = request.POST.get('UserType')
+                    ua.UserOperation = "add"
+                    ua.save()
+                    if has_role(request.user, [ROLE_ADMIN]):
+                        return redirect('AdminHome')
+                    elif has_role(request.user, [ROLE_MANAGER]):
+                        return redirect('ManagerHome')
+                    else:
+                        return redirect('EmployeeHome')
+                form1 = UserAccessForm()
+                return render(request, 'ExternalUserLookup.html',
+                              {"Individual": individual, "Message": "", "Form1": form1})
+        else:
+            form1 = UserAccessForm()
+            return render(request, 'ExternalUserLookup.html',
+                          {"Individual": individual, "Message": "", "Form1": form1})
+    return render(request, 'home.html')
+
 def EditInfo(request):
     if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN, ROLE_MANAGER, ROLE_EMPLOYEE]):
         individual = InternalUser.objects.get(Username=request.user.username)
-        return render(request, 'EmployeeInfo.html', {"Individual":individual})
+        if request.method == 'POST':
+            internalUserForm = InternalUserForm(request.POST, instance=individual)
+            if internalUserForm.is_valid():
+                internalUserForm.save()
+                return render(request, 'EmployeeInfo.html',
+                              {"Individual": individual, "IndividualForm": internalUserForm})
+        internalUserForm = InternalUserForm(instance=individual)
+        return render(request, 'EmployeeInfo.html',
+                      {"Individual": individual, "IndividualForm": internalUserForm})
     return render(request, 'home.html')
 
 def MerchantHome(request):
@@ -319,7 +595,21 @@ def IndividualHome(request):
 def IndividualInfo(request):
     if request.user.is_authenticated() and has_role(request.user, [ROLE_INDIVIDUAL, ROLE_MERCHANT]):
         individual = ExternalUser.objects.get(Username=request.user.username)
-        return render(request, 'PersonalInformation.html', {"Individual":individual})
+        if request.method == 'POST':
+            externalUserForm = ExternalUserForm(request.POST, instance=individual)
+            if externalUserForm.is_valid():
+                ua = UserAccess(Username=individual.Username, FirstName=externalUserForm.data.get('FirstName'), LastName=externalUserForm.data.get('LastName'),
+                                     Email=externalUserForm.data.get('Email'), Address=externalUserForm.data.get('Address'), City=externalUserForm.data.get('City'),
+                                     State=externalUserForm.data.get('State'), Zip=externalUserForm.data.get('Zip'))
+                ua.UserType = individual.UserType
+                ua.UserOperation = "modify"
+                ua.save()
+                if has_role(request.user, [ROLE_INDIVIDUAL]):
+                    return redirect('IndividualHome')
+                else:
+                    return redirect('MerchantHome')
+        externalUserForm = ExternalUserForm(instance=individual)
+        return render(request, 'PersonalInformation.html', {"Individual":individual, "IndividualForm":externalUserForm})
     return render(request, 'home.html')
 
 def IndividualAccount(request):
@@ -331,7 +621,6 @@ def IndividualAccount(request):
             return render(request, 'Account.html', {"Individual": individual, "Account": account, "Transactions": transactions})
         return render(request, 'home.html')
     return render(request, 'home.html')
-
 
 def isNum(data):
     try:
@@ -736,7 +1025,26 @@ def Downloadpage(request):
         if request.method == "POST":
             individual = ExternalUser.objects.get(Username=request.user.username)
             account = BankAccount.objects.get(User=individual, AccNo=request.POST.get('AccNo'))
-            return render(request, 'download.html', {"Individual": individual, "Account": account})
+            transactions = Transaction.objects.filter(Q(SendAcc=account.AccNo) | Q(RecAcc=account.AccNo))
+
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=%s' % 'Statement.csv'
+            writer = csv.writer(response)
+            for transaction in transactions:
+                row = ""
+                for field in Transaction._meta.fields:
+                    row += str(getattr(transaction, field.name)) + ","
+                    writer.writerow(row)
+
+            #t = loader.get_template('Account.html')
+            #c = Context({
+            #    'data': csv_data,
+            #    'Individual': individual,
+            #    'Account': account,
+            #    "Transactions": transactions
+            #})
+            #response.write(t.render(c))
+            return response
         return render(request, 'home.html')
     return render(request, 'home.html')
 

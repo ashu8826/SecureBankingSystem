@@ -17,8 +17,9 @@
 	<h2>Personal Information</h2>
 
     <form method="post"> {% csrf_token %}
-        {{ IndividualForm.as_p }}
-        <button type="submit">Save changes</button>
+        {{ Form1.as_p }}
+        <input type="hidden" name="userNo" value="{{ Username }}">
+        <button type="submit" name="Add">Add External User</button>
     </form>
 </body>
 </html>

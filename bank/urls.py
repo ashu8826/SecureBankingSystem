@@ -9,7 +9,10 @@ urlpatterns = [
     url(r'^AdminHome/EditInfo$',views.EditInfo, name='EditInfo'),
     url(r'^AdminHome/Logs$',views.Logs, name='Logs'),
     url(r'^AdminHome/InternalUserLookup$',views.InternalUserLookup, name='InternalUserLookup'),
-    url(r'^AdminHome/PII',views.PII, name='PII'),
+    url(r'^AdminHome/PII$',views.PII, name='PII'),
+    url(r'^AdminHome/AddInternalUser$',views.AddInternalUser, name='AddInternalUser'),
+    url(r'^AdminHome/ExternalUserRequest$',views.ExternalUserRequest, name='ExternalUserRequest'),
+    url(r'^AdminHome/AddExternalUser$',views.AddExternalUser, name='AddExternalUser'),
 
     url(r'^ManagerHome/$',views.ManagerHome, name='ManagerHome'),
     url(r'^ManagerHome/CompleteTask$',views.CompleteTask, name='CompleteTask'),
@@ -19,6 +22,7 @@ urlpatterns = [
     url(r'^ManagerHome/TModify$',views.TModify, name='TModify'),
     url(r'^ManagerHome/TCancel$',views.TCancel, name='TCancel'),
     url(r'^ManagerHome/TransactionInquiry$',views.TransactionInquiry, name='TransactionInquiry'),
+    url(r'^ManagerHome/ExternalUserAccess$',views.ExternalUserAccess, name='ExternalUserAccess'),
 
     url(r'^EmployeeHome/$',views.EmployeeHome, name='EmployeeHome'),
     url(r'^EmployeeHome/CompleteTask$',views.CompleteTask, name='CompleteTask'),
@@ -28,6 +32,7 @@ urlpatterns = [
     url(r'^EmployeeHome/TModify$',views.TModify, name='TModify'),
     url(r'^EmployeeHome/TCancel$',views.TCancel, name='TCancel'),
     url(r'^EmployeeHome/TransactionInquiry$',views.TransactionInquiry, name='TransactionInquiry'),
+    url(r'^EmployeeHome/ExternalUserAccess$',views.ExternalUserAccess, name='ExternalUserAccess'),
 
     url(r'^MerchantHome/$',views.MerchantHome, name='MerchantHome'),
     url(r'^MerchantHome/Info$',views.IndividualInfo, name='IndividualInfo'),

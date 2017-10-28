@@ -17,8 +17,15 @@
 	<h2>Personal Information</h2>
 
     <form method="post"> {% csrf_token %}
-        {{ IndividualForm.as_p }}
-        <button type="submit">Save changes</button>
+        {{ Form1.as_p }}
+        {{ Form2.as_p }}
+        {{ Form3.as_p }}
+        <select name="UserType">
+            <option value="EMPLOYEE" selected="selected">EMPLOYEE</option>
+            <option value="MANAGER">MANAGER</option>
+            <option value="ADMIN">ADMIN</option>
+        </select>
+        <button type="submit" name="Add">Add Internal User</button>
     </form>
 </body>
 </html>
