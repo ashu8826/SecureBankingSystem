@@ -20,6 +20,9 @@ import random
 import string
 from random import randint
 from django.template import loader, Context
+import django
+from django.conf import settings
+from django.core.mail import send_mail
 
 def AddAccount(request):
     if request.user.is_authenticated() and has_role(request.user, [ROLE_EMPLOYEE]):
@@ -144,12 +147,18 @@ def AddExternalUser(request):
                     with open(loc, 'wb+') as pem_out:
                         pem_out.write(binPrivKey)
                     l = SystemLogs(CreatedDate=datetime.now(),
-                                   Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '+ str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: ' + str(u.Zip) + ', UserType: ' + u.UserType)
+                                   Detail='Added - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '+ str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: ' + str(u.Zip) + ', UserType: ' + u.UserType)
                     l.save()
                     if(u.UserType == 'INDIVIDUAL'):
                         assign_role(user, ROLE_INDIVIDUAL)
                     else:
                         assign_role(user, ROLE_MERCHANT)
+                    try:
+                        send_mail('Bank Account Details', 'Username = ' + user.username + ', Ask Admin ' + u.FirstName + ' ' + u.LastName + ' for the password.',
+                              settings.EMAIL_HOST_USER,
+                              [u.Email], fail_silently=False)
+                    except Exception:
+                        print "Sendmail Failed"
                     UserAccess.objects.filter(id=username, UserOperation='add').delete()
                     addUsers = UserAccess.objects.filter(UserOperation='add')
                     modifyUsers = UserAccess.objects.filter(UserOperation='modify')
@@ -192,7 +201,7 @@ def ExternalUserRequest(request):
                 u.Zip = ua.Zip
                 u.save()
                 l = SystemLogs(CreatedDate=datetime.now(),
-                               Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: ' + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: ' + str(u.Zip) + ', UserType: ' + u.UserType)
+                               Detail='Modified - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: ' + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: ' + str(u.Zip) + ', UserType: ' + u.UserType)
                 l.save()
                 UserAccess.objects.filter(Username=username, UserOperation='modify').delete()
                 addUsers = UserAccess.objects.filter(UserOperation='add')
@@ -321,6 +330,12 @@ def AddInternalUser(request):
                         assign_role(user, ROLE_MANAGER)
                     else:
                         assign_role(user, ROLE_EMPLOYEE)
+                    try:
+                        send_mail('Bank Account Details', 'Username = ' + user.username + ', Ask Admin ' + e.FirstName + ' ' + e.LastName + ' for the password.',
+                              settings.EMAIL_HOST_USER,
+                              [e.Email], fail_silently=False)
+                    except Exception:
+                        print "Sendmail Failed"
                     return render(request, 'InternalUserLookup.html',
                                   {"Individual": individual, "AdminRequest": "GET", "Message": ""})
                 else:

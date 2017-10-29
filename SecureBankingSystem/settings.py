@@ -27,6 +27,14 @@ DEBUG = True
 ALLOWED_HOSTS = []
 ROLEPERMISSIONS_MODULE = 'SecureBankingSystem.roles'
 
+# Gmail
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_PASSWORD = '14008Akash'
+EMAIL_HOST_USER = 'aku14008@gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 
 # Application definition
 

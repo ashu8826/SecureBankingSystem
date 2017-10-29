@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6fc29a2c-f3b3-48f4-8cdd-3abba8a7ca56" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/db.sqlite3" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/SecureBankingSystem/settings.py" afterPath="$PROJECT_DIR$/SecureBankingSystem/settings.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bank/views.py" afterPath="$PROJECT_DIR$/bank/views.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,7 +19,7 @@
       <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/bank/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
+            <state relative-caret-position="1054">
               <caret line="64" column="0" lean-forward="false" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
               <folding />
             </state>
@@ -26,11 +29,21 @@
       <file leaf-file-name="views.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bank/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="1129" column="40" lean-forward="false" selection-start-line="1129" selection-start-column="40" selection-end-line="1129" selection-end-column="40" />
+            <state relative-caret-position="136">
+              <caret line="136" column="32" lean-forward="true" selection-start-line="136" selection-start-column="32" selection-end-line="136" selection-end-column="32" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="settings.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/SecureBankingSystem/settings.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="412">
+              <caret line="34" column="20" lean-forward="true" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -47,7 +60,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>id</find>
       <find>account</find>
       <find>Task</find>
       <find>Pers</find>
@@ -77,6 +89,7 @@
       <find>l.save()</find>
       <find>InternalUser(</find>
       <find>download</find>
+      <find>AddInte</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -98,7 +111,6 @@
         <option value="$PROJECT_DIR$/SecureBankingSystem/roles.py" />
         <option value="$PROJECT_DIR$/templates/MerchantHome.html" />
         <option value="$PROJECT_DIR$/templates/download.html" />
-        <option value="$PROJECT_DIR$/SecureBankingSystem/settings.py" />
         <option value="$PROJECT_DIR$/templates/logs.html" />
         <option value="$PROJECT_DIR$/templates/PII.html" />
         <option value="$PROJECT_DIR$/templates/TransactionLookup.html" />
@@ -125,6 +137,7 @@
         <option value="$PROJECT_DIR$/bank/urls.py" />
         <option value="$PROJECT_DIR$/templates/IndividualHome.html" />
         <option value="$PROJECT_DIR$/templates/AddAccount.html" />
+        <option value="$PROJECT_DIR$/SecureBankingSystem/settings.py" />
         <option value="$PROJECT_DIR$/bank/views.py" />
       </list>
     </option>
@@ -160,6 +173,7 @@
     </navigator>
     <panes>
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -170,13 +184,12 @@
             <path>
               <item name="FCSProject" type="b2602c69:ProjectViewProjectNode" />
               <item name="FCSProject" type="462c0819:PsiDirectoryNode" />
-              <item name="bank" type="462c0819:PsiDirectoryNode" />
+              <item name="SecureBankingSystem" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -441,14 +454,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/SecureBankingSystem/settings.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="549">
-          <caret line="123" column="27" lean-forward="true" selection-start-line="123" selection-start-column="27" selection-end-line="123" selection-end-column="27" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/EmployeeInfo.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="222">
@@ -594,16 +599,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/bank/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
+        <state relative-caret-position="1054">
           <caret line="64" column="0" lean-forward="false" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/SecureBankingSystem/settings.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="412">
+          <caret line="34" column="20" lean-forward="true" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bank/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="1129" column="40" lean-forward="false" selection-start-line="1129" selection-start-column="40" selection-end-line="1129" selection-end-column="40" />
+        <state relative-caret-position="136">
+          <caret line="136" column="32" lean-forward="true" selection-start-line="136" selection-start-column="32" selection-end-line="136" selection-end-column="32" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
           </folding>
