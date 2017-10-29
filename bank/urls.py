@@ -33,6 +33,8 @@ urlpatterns = [
     url(r'^EmployeeHome/TCancel$',views.TCancel, name='TCancel'),
     url(r'^EmployeeHome/TransactionInquiry$',views.TransactionInquiry, name='TransactionInquiry'),
     url(r'^EmployeeHome/ExternalUserAccess$',views.ExternalUserAccess, name='ExternalUserAccess'),
+    url(r'^EmployeeHome/AccountAccess$',views.AccountAccess, name='AccountAccess'),
+    url(r'^EmployeeHome/AddAccount$',views.AddAccount, name='AddAccount'),
 
     url(r'^MerchantHome/$',views.MerchantHome, name='MerchantHome'),
     url(r'^MerchantHome/Info$',views.IndividualInfo, name='IndividualInfo'),
@@ -46,6 +48,8 @@ urlpatterns = [
     url(r'^MerchantHome/doCredit$',views.doCredit, name='doCredit'),
     url(r'^MerchantHome/doTransfer$',views.doTransfer, name='doTransfer'),
     url(r'^MerchantHome/doPayment$',views.doPayment, name='doPayment'),
+    url(r'^IndividualHome/OpenAccount$',views.OpenAccount, name='OpenAccount'),
+    url(r'^IndividualHome/CloseAccount$',views.CloseAccount, name='CloseAccount'),
 
     url(r'^IndividualHome/$',views.IndividualHome, name='IndividualHome'),
     url(r'^IndividualHome/Info$',views.IndividualInfo, name='IndividualInfo'),
@@ -59,6 +63,8 @@ urlpatterns = [
     url(r'^IndividualHome/doCredit$',views.doCredit, name='doCredit'),
     url(r'^IndividualHome/doTransfer$',views.doTransfer, name='doTransfer'),
     url(r'^IndividualHome/doPayment$',views.doPayment, name='doPayment'),
+    url(r'^IndividualHome/OpenAccount$',views.OpenAccount, name='OpenAccount'),
+    url(r'^IndividualHome/CloseAccount$',views.CloseAccount, name='CloseAccount'),
 
     url(r'^$', views.home, name='home'),
     url(r'^login/$', auth_views.login, {'template_name': 'login.html'}, name='login'),

@@ -48,6 +48,13 @@ class UserAccess(models.Model):
 class UserDelete(models.Model):
     Username = models.CharField(max_length = 50)
 
+class AccountOpen(models.Model):
+    AccType = models.CharField(max_length=60)
+    User = models.ForeignKey(ExternalUser)
+
+class AccountDelete(models.Model):
+    AccountNo = models.IntegerField()
+
 class BankAccount(models.Model):
     AccNo = models.IntegerField()
     Balance = models.FloatField()

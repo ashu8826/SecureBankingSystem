@@ -41,7 +41,7 @@
                     <td>{{addUsers.UserType}}</td>
                     <td>
                         <form id = "userForm_{{addUsers.id}}" action="AddExternalUser" method="post">{% csrf_token %}
-                            <input type="hidden" name="userNo" value="{{ addUsers.Username }}" />
+                            <input type="hidden" name="userNo" value="{{ addUsers.id }}" />
                         <a href="#" onclick="document.forms['userForm_{{addUsers.id}}'].submit();" > Add </a>
                         </form>
                     </td>

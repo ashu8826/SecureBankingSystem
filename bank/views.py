@@ -21,6 +21,92 @@ import string
 from random import randint
 from django.template import loader, Context
 
+def AddAccount(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_EMPLOYEE]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            accountNo = request.POST.get('Account')
+            accountID = request.POST.get('accountID')
+            if 'Open' in request.POST:
+                if(isNum(accountNo) and accountNo > 0):
+                    try:
+                        ao = AccountOpen.objects.get(id=accountID)
+                        try:
+                            BankAccount.objects.get(AccNo=accountNo)
+                            return render(request, 'AddAccount.html', {"Individual": individual, "AccountID": accountID, "Message": "Account already exists!"})
+                        except BankAccount.DoesNotExist:
+                            bo = BankAccount(AccNo=accountNo, AccType=ao.AccType, User=ao.User, Balance=0, OpenDate=datetime.now(), AccStatus="active")
+                            bo.save()
+                            ao.delete()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                       Detail='Open - Bank Account: ' + str(bo.AccNo) + ', Balance:' + str(bo.Balance) + ', Type: ' + bo.AccType + ', Open Date: ' + str(bo.OpenDate) + ', Status: ' + bo.AccStatus)
+                            l.save()
+                            openAccounts = AccountOpen.objects.all()
+                            closeAccounts = AccountDelete.objects.all()
+                            return render(request, 'AccountAccess.html',
+                                      {"Individual": individual, "OpenAccounts": openAccounts,
+                                       "CloseAccounts": closeAccounts})
+                    except AccountOpen.DoesNotExist:
+                        return render(request, 'AddAccount.html', {"Individual": individual, "AccountID": accountID})
+                else:
+                    return render(request, 'AddAccount.html', {"Individual": individual, "AccountID": accountID})
+            else:
+                return render(request, 'AddAccount.html', {"Individual": individual, "AccountID": accountID})
+        else:
+            accountID = request.POST.get('accountID')
+            return render(request, 'AddAccount.html', {"Individual": individual, "AccountID": accountID})
+    return render(request, 'home.html')
+
+def AccountAccess(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_EMPLOYEE]):
+        individual = InternalUser.objects.get(Username=request.user.username)
+        if request.method == "POST":
+            accountNo = request.POST.get('accountID')
+            account = BankAccount.objects.get(AccNo=accountNo)
+            account.AccStatus = "closed"
+            account.save()
+            AccountDelete.objects.filter(AccountNo=accountNo).delete()
+            l = SystemLogs(CreatedDate=datetime.now(),
+                           Detail='Closed - Bank Account: ' + str(account.AccNo) + ', Balance:' + str(account.Balance) + ', Type: ' + account.AccType + ', Open Date: '+ str(account.OpenDate) + ', Status: ' + account.AccStatus)
+            l.save()
+            openAccounts = AccountOpen.objects.all()
+            closeAccounts = AccountDelete.objects.all()
+            return render(request, 'AccountAccess.html',
+                          {"Individual": individual, "OpenAccounts": openAccounts, "CloseAccounts": closeAccounts})
+        else:
+            openAccounts = AccountOpen.objects.all()
+            closeAccounts = AccountDelete.objects.all()
+            return render(request, 'AccountAccess.html',
+                          {"Individual": individual, "OpenAccounts": openAccounts, "CloseAccounts": closeAccounts})
+    return render(request, 'home.html')
+
+def OpenAccount(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_INDIVIDUAL, ROLE_MERCHANT]):
+        if request.method == "POST":
+            individual = ExternalUser.objects.get(Username=request.user.username)
+            AccountOpen(User=individual, AccType=request.POST.get('AccountType')).save()
+            if has_role(request.user, [ROLE_INDIVIDUAL]):
+                return redirect('IndividualHome')
+            else:
+                return redirect('MerchantHome')
+        else:
+            individual = ExternalUser.objects.get(Username=request.user.username)
+            return render(request, 'OpenAccount.html', {'Individual': individual})
+    return render(request, 'home.html')
+
+def CloseAccount(request):
+    if request.user.is_authenticated() and has_role(request.user, [ROLE_INDIVIDUAL, ROLE_MERCHANT]):
+        if request.method == "POST":
+            AccountDelete(AccountNo=request.POST.get('AccNo')).save()
+            if has_role(request.user, [ROLE_INDIVIDUAL]):
+                return redirect('IndividualHome')
+            else:
+                return redirect('MerchantHome')
+        else:
+            return render(request, 'home.html')
+    return render(request, 'home.html')
+
+
 def AdminHome(request):
     if request.user.is_authenticated() and has_role(request.user, [ROLE_ADMIN]):
         individual = InternalUser.objects.get(Username=request.user.username)
@@ -43,7 +129,7 @@ def AddExternalUser(request):
             if 'Add' in request.POST:
                 form1 = UserCreationForm(request.POST)
                 username = request.POST.get('userNo')
-                ua = UserAccess.objects.get(Username=username)
+                ua = UserAccess.objects.get(id=username)
                 if(form1.is_valid()):
                     form1.save()
                     user = User.objects.get(username=form1.cleaned_data.get('username'))
@@ -58,15 +144,13 @@ def AddExternalUser(request):
                     with open(loc, 'wb+') as pem_out:
                         pem_out.write(binPrivKey)
                     l = SystemLogs(CreatedDate=datetime.now(),
-                                   Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '
-                                          + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: '
-                                          + str(u.Zip) + ', UserType: ' + u.UserType)
+                                   Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '+ str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: ' + str(u.Zip) + ', UserType: ' + u.UserType)
                     l.save()
                     if(u.UserType == 'INDIVIDUAL'):
                         assign_role(user, ROLE_INDIVIDUAL)
                     else:
                         assign_role(user, ROLE_MERCHANT)
-                    UserAccess.objects.filter(Username=username, UserOperation='add').delete()
+                    UserAccess.objects.filter(id=username, UserOperation='add').delete()
                     addUsers = UserAccess.objects.filter(UserOperation='add')
                     modifyUsers = UserAccess.objects.filter(UserOperation='modify')
                     deleteUsers = UserDelete.objects.all()
@@ -108,9 +192,7 @@ def ExternalUserRequest(request):
                 u.Zip = ua.Zip
                 u.save()
                 l = SystemLogs(CreatedDate=datetime.now(),
-                               Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '
-                                      + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: '
-                                      + str(u.Zip) + ', UserType: ' + u.UserType)
+                               Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: ' + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: ' + str(u.Zip) + ', UserType: ' + u.UserType)
                 l.save()
                 UserAccess.objects.filter(Username=username, UserOperation='modify').delete()
                 addUsers = UserAccess.objects.filter(UserOperation='add')
@@ -123,17 +205,17 @@ def ExternalUserRequest(request):
                 username = request.POST.get('userNo')
                 u = ExternalUser.objects.get(Username=username)
                 accounts = BankAccount.objects.filter(User=u)
+                AccountOpen = BankAccount.objects.filter(User=u).delete()
                 for account in accounts:
+                    AccountDelete.objects.filter(AccountNo=account.AccNo).delete()
                     account.delete()
                     l = SystemLogs(CreatedDate=datetime.now(),
-                                   Detail='Deleted - Bank Account: ' + str(account.AccNo) + ', Balance:' + str(account.Balance) + ', Type: ' + account.AccType + ', Open Date: '
-                                          + str(account.OpenDate) + ', Status: ' + account.AccStatus)
+                                   Detail='Deleted - Bank Account: ' + str(account.AccNo) + ', Balance:' + str(account.Balance) + ', Type: ' + account.AccType + ', Open Date: ' + str(account.OpenDate) + ', Status: ' + account.AccStatus)
                     l.save()
                 u.delete()
+                User.objects.get(username=username).delete()
                 l = SystemLogs(CreatedDate=datetime.now(),
-                               Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: '
-                                      + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: '
-                                      + str(u.Zip) + ', UserType: ' + u.UserType)
+                               Detail='Deleted - External User: ' + u.Username + ', First Name:' + u.FirstName + ', Last Name: ' + u.LastName + ', Email: ' + str(u.Email) + ', Address: ' + u.Address + ', City: ' + u.City + ', State: ' + u.State + ', Zip: ' + str(u.Zip) + ', UserType: ' + u.UserType)
                 l.save()
                 UserDelete.objects.filter(Username=username).delete()
                 addUsers = UserAccess.objects.filter(UserOperation='add')
@@ -161,9 +243,7 @@ def InternalUserLookup(request):
                     internalUserForm.save()
                     e = InternalUser.objects.get(Username=request.POST.get('EmployeeUsername'))
                     l = SystemLogs(CreatedDate=datetime.now(),
-                                   Detail='Modified - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: '
-                                          + str(e.Email) + ', Address: ' + e.Address + ', City: ' + e.City + ', State: ' + e.State + ', Zip: '
-                                          + str(e.Zip) + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
+                                   Detail='Modified - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: ' + str(e.Email) + ', Address: ' + e.Address + ', City: ' + e.City + ', State: ' + e.State + ', Zip: ' + str(e.Zip) + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
                     l.save()
                     return render(request, 'InternalUserLookup.html',
                                   {"Individual": individual, "AdminRequest": "POST", "InternalUser": internalUser,
@@ -191,9 +271,7 @@ def InternalUserLookup(request):
                 user.delete()
                 e = InternalUser.objects.get(Username=request.POST.get('EmployeeUsername'))
                 l = SystemLogs(CreatedDate=datetime.now(),
-                               Detail='Deleted - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: '
-                                      + str(e.Email) + ', Address: ' + e.Address + ', City: ' + e.City + ', State: ' + e.State + ', Zip: '
-                                      + str(e.Zip) + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
+                               Detail='Deleted - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: ' + str(e.Email) + ', Address: ' + e.Address + ', City: ' + e.City + ', State: ' + e.State + ', Zip: ' + str(e.Zip) + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
                 l.save()
                 return render(request, 'InternalUserLookup.html', {"Individual": individual, "AdminRequest": "GET", "Message": ""})
             else:
@@ -235,9 +313,7 @@ def AddInternalUser(request):
                     e.UserType = request.POST.get('UserType')
                     e.save()
                     l = SystemLogs(CreatedDate=datetime.now(),
-                                   Detail='Added - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: '
-                                          + str(e.Email) + ', Address: ' + e.Address + + ', City: ' + e.City  + ', State: ' + e.State  + ', Zip: '
-                                          + str(e.Zip)  + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
+                                   Detail='Added - Internal User: ' + e.Username + ', First Name:' + e.FirstName + ', Last Name: ' + e.LastName + ', Email: ' + str(e.Email) + ', Address: ' + e.Address + ', City: ' + e.City  + ', State: ' + e.State  + ', Zip: ' + str(e.Zip)  + ', UserType: ' + e.UserType + ', SSN: ' + e.SSN.SSN)
                     l.save()
                     if(e.UserType == 'ADMIN'):
                         assign_role(user, ROLE_ADMIN)

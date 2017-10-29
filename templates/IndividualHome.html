@@ -9,6 +9,10 @@
 				<td><a href="Info"> Personal Information</a>
 				</td>
 			</tr>
+            <tr>
+				<td><a href="OpenAccount"> Open Account</a>
+				</td>
+			</tr>
 			<tr>
 				<td>
 					<a href="{% url 'logout' %}">Logout</a>
@@ -24,6 +28,7 @@
 			<tr>
 				<th>Account Number</th>
 				<th>Account Type</th>
+                <th>Account Status</th>
 				<th>Balance</th>
 			</tr>
             {% for account in Accounts %}
@@ -35,7 +40,20 @@
                         </form>
                     </td>
                     <td>{{account.AccType}}</td>
+                    <td>{{ account.AccStatus }}</td>
                     <td>{{account.Balance}}</td>
+                    <td>
+                        <form id = "accountForm_{{account.id}}" action="Account" method="post">{% csrf_token %}
+                            <input type="hidden" name="AccNo" value="{{ account.AccNo }}" />
+                        <a href="#" onclick="document.forms['accountForm_{{account.id}}'].submit();" > {{ account.AccNo }} </a>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="post" action="CloseAccount"> {% csrf_token %}
+                            <input type="hidden" name="AccNo" value="{{ account.AccNo }}" />
+                            <button type="submit">Close Account</button>
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
 		</table>

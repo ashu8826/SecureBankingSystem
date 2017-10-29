@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Requests</title>
+</head>
+<body>
+    <h3>
+        {% if Individual.UserType == 'ADMIN' %}
+            <a href="{% url 'AdminHome' %}">Back</a>
+        {% elif Individual.UserType == 'MANAGER' %}
+            <a href="{% url 'ManagerHome' %}">Back</a>
+        {% else %}
+            <a href="{% url 'EmployeeHome' %}">Back</a>
+        {% endif %}
+	</h3>
+
+	<h2>Account Requests</h2>
+    <h4> Open Accounts</h4>
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>Account Type</th>
+            <th>Action</th>
+        </tr>
+            {% for openAccounts in OpenAccounts %}
+                <tr>
+                    <td>{{openAccounts.User.Username}}</td>
+                    <td>{{openAccounts.AccType}}</td>
+                    <td>
+                        <form id = "openAccountsForm_{{openAccounts.id}}" action="AddAccount" method="post">{% csrf_token %}
+                            <input type="hidden" name="accountID" value="{{ openAccounts.id }}" />
+                        <a href="#" onclick="document.forms['openAccountsForm_{{openAccounts.id}}'].submit();" > Open </a>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+    </table>
+
+    <h4> Close Accounts</h4>
+    <table>
+        <tr>
+            <th>Account No</th>
+            <th>Action</th>
+        </tr>
+        {% for closeAccounts in CloseAccounts %}
+                <tr>
+                    <td>{{closeAccounts.AccountNo}}</td>
+                    <td>
+                        <form id = "closeAccountsForm_{{closeAccounts.id}}" method="post">{% csrf_token %}
+                            <input type="hidden" name="accountID" value="{{ closeAccounts.AccountNo }}" />
+                        <a href="#" onclick="document.forms['closeAccountsForm_{{closeAccounts.id}}'].submit();" > Close </a>
+                        </form>
+                    </td>
+                </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

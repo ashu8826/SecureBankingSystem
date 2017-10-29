@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Open Account Request</title>
+</head>
+<body>
+<h3>
+        {% if Individual.UserType == 'ADMIN' %}
+            <a href="{% url 'AdminHome' %}">Back</a>
+        {% elif Individual.UserType == 'MANAGER' %}
+            <a href="{% url 'ManagerHome' %}">Back</a>
+        {% else %}
+            <a href="{% url 'EmployeeHome' %}">Back</a>
+        {% endif %}
+	</h3>
+
+<h2> Open Account Request</h2>
+
+    <form method="post"> {% csrf_token %}
+        <select name="AccountType">
+            <option value="Savings" selected="selected">Savings</option>
+            <option value="Current">Current</option>
+            <option value="Checking">Checking</option>
+        </select>
+        <button type="submit">Request Open Account</button>
+    </form>
+
+</body>
+</html>
