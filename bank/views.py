@@ -274,7 +274,7 @@ def InternalUserLookup(request):
                     task.Assignee = admin[adminCount]
                     task.save()
                     l = SystemLogs(CreatedDate=datetime.now(),
-                                   Detail='Updated - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                                   Detail='Updated - Task Detail: ' + str(task.id) + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
                     l.save()
                 internalUser.delete()
                 user.delete()
@@ -547,7 +547,7 @@ def TCancel(request):
                 task = Task.objects.get(TaskDetail=transaction)
                 task.delete()
                 l = SystemLogs(CreatedDate=datetime.now(),
-                               Detail='Deleted - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                               Detail='Deleted - Task Detail: ' + str(task.id) + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
                 l.save()
             except Task.DoesNotExist:
                 return render(request, 'TransactionLookup.html',
@@ -598,7 +598,7 @@ def CompleteTask(request):
             task.Status = "completed"
             task.save()
             l = SystemLogs(CreatedDate=datetime.now(),
-                     Detail='Updated - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status)
+                     Detail='Updated - Task Detail: ' + str(task.id) + ', Message: ' + task.Message + ', Status: ' + task.Status)
             l.save()
             if has_role(request.user, [ROLE_ADMIN]):
                 return redirect('AdminHome')
@@ -725,7 +725,16 @@ def Debit(request):
         if request.method == "POST":
             individual = ExternalUser.objects.get(Username=request.user.username)
             account = BankAccount.objects.get(User=individual, AccNo=request.POST.get('AccNo'))
-            return render(request, 'debit.html', {"Individual": individual, "Account": account, "Message": ""})
+            allowed_chars = ''.join((string.digits))
+            plainText = ''.join(random.choice(allowed_chars) for _ in range(6))
+            try:
+                send_mail('Bank Account OTP',
+                          'OTP = ' + plainText,
+                          settings.EMAIL_HOST_USER,
+                          [individual.Email], fail_silently=False)
+            except Exception:
+                print "Sendmail Failed"
+            return render(request, 'debit.html', {"Individual": individual, "Account": account, "Message": "", "OTPCode": plainText})
         return render(request, 'home.html')
     return render(request, 'home.html')
 
@@ -737,48 +746,61 @@ def doDebit(request):
             data = request.POST.get('Amount')
             if(isNum(data) and float(data) > 0 and float(account.Balance) >= float(data)):
                 if(float(data) > 500):
-                    t = Transaction(TransDate=datetime.now(), TransType='debit', Amount=float(data),
+                    if int(request.POST.get('OtpCodeH')) == int(request.POST.get('OtpCode')):
+                        t = Transaction(TransDate=datetime.now(), TransType='debit', Amount=float(data),
                                     TransStatus='pending',
                                     SendAcc=account.AccNo, RecAcc=account.AccNo)
-                    t.save()
-                    task = Task(TaskDetail=t, Message='general', Status='notcompleted')
-                    employees = InternalUser.objects.filter(UserType='EMPLOYEE')
-                    managers = InternalUser.objects.filter(UserType='MANAGER')
-                    admin = InternalUser.objects.filter(UserType='ADMIN')
-                    if(float(data) > 10000):
-                        if managers:
-                            managerCount = randint(0, managers.count()-1)
-                            task.Assignee = managers[managerCount]
-                            task.save()
+                        t.save()
+                        task = Task(TaskDetail=t, Message='general', Status='notcompleted')
+                        employees = InternalUser.objects.filter(UserType='EMPLOYEE')
+                        managers = InternalUser.objects.filter(UserType='MANAGER')
+                        admin = InternalUser.objects.filter(UserType='ADMIN')
+                        if(float(data) > 10000):
+                            if managers:
+                                managerCount = randint(0, managers.count()-1)
+                                task.Assignee = managers[managerCount]
+                                task.save()
+                            else:
+                                adminCount = randint(0, admin.count() - 1)
+                                task.Assignee = admin[adminCount]
+                                task.save()
                         else:
-                            adminCount = randint(0, admin.count() - 1)
-                            task.Assignee = admin[adminCount]
-                            task.save()
-                    else:
-                        if employees:
-                            employeeCount = randint(0, employees.count() - 1)
-                            task.Assignee = employees[employeeCount]
-                            task.save()
-                        elif managers:
-                            managerCount = randint(0, managers.count()-1)
-                            task.Assignee = managers[managerCount]
-                            task.save()
-                        else:
-                            adminCount = randint(0, admin.count() - 1)
-                            task.Assignee = admin[adminCount]
-                            task.save()
-                    l = SystemLogs(CreatedDate=datetime.now(),
+                            if employees:
+                                employeeCount = randint(0, employees.count() - 1)
+                                task.Assignee = employees[employeeCount]
+                                task.save()
+                            elif managers:
+                                managerCount = randint(0, managers.count()-1)
+                                task.Assignee = managers[managerCount]
+                                task.save()
+                            else:
+                                adminCount = randint(0, admin.count() - 1)
+                                task.Assignee = admin[adminCount]
+                                task.save()
+                        l = SystemLogs(CreatedDate=datetime.now(),
                                    Detail='Added - Transaction Type: ' + t.TransType + ', Amount:' + str(
                                        data) + ', Status: ' + t.TransType + ', Send Account: ' + str(
                                        t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
-                    l.save()
-                    l = SystemLogs(CreatedDate=datetime.now(),
-                                   Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
-                    l.save()
-                    if has_role(request.user, [ROLE_INDIVIDUAL]):
-                        return redirect('IndividualHome')
+                        l.save()
+                        l = SystemLogs(CreatedDate=datetime.now(),
+                                   Detail='Added - Task Detail: ' + str(task.id) + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                        l.save()
+                        if has_role(request.user, [ROLE_INDIVIDUAL]):
+                            return redirect('IndividualHome')
+                        else:
+                            return redirect('MerchantHome')
                     else:
-                        return redirect('MerchantHome')
+                        allowed_chars = ''.join((string.digits))
+                        plainText = ''.join(random.choice(allowed_chars) for _ in range(6))
+                        try:
+                            send_mail('Bank Account OTP',
+                                      'OTP = ' + plainText,
+                                      settings.EMAIL_HOST_USER,
+                                      [individual.Email], fail_silently=False)
+                        except Exception:
+                            print "Sendmail Failed"
+                        return render(request, 'debit.html', {"Individual": individual, "Account": account,
+                                                              "Message": "OTP Authentication Failed", "OTPCode": plainText})
                 else:
                     t = Transaction(TransDate=datetime.now(), TransType='debit', Amount=float(data),
                                     TransStatus='cleared', SendAcc=account.AccNo, RecAcc=account.AccNo)
@@ -798,7 +820,16 @@ def doDebit(request):
                     else:
                         return redirect('MerchantHome')
             else:
-                return render(request, 'debit.html', {"Individual": individual, "Account": account, "Message": "Amount should be valid number between 0 and balance in account"})
+                allowed_chars = ''.join((string.digits))
+                plainText = ''.join(random.choice(allowed_chars) for _ in range(6))
+                try:
+                    send_mail('Bank Account OTP',
+                              'OTP = ' + plainText,
+                              settings.EMAIL_HOST_USER,
+                              [individual.Email], fail_silently=False)
+                except Exception:
+                    print "Sendmail Failed"
+                return render(request, 'debit.html', {"Individual": individual, "Account": account, "Message": "Amount should be valid number between 0 and balance in account", "OTPCode": plainText})
         return render(request, 'home.html')
     return render(request, 'home.html')
 
@@ -855,7 +886,7 @@ def doCredit(request):
                                        t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
                     l.save()
                     l = SystemLogs(CreatedDate=datetime.now(),
-                                   Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                                   Detail='Added - Task Detail: ' + str(task.id) + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
                     l.save()
                     if has_role(request.user, [ROLE_INDIVIDUAL]):
                         return redirect('IndividualHome')
@@ -955,7 +986,7 @@ def doTransfer(request):
                                                t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
                             l.save()
                             l = SystemLogs(CreatedDate=datetime.now(),
-                                           Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                                           Detail='Added - Task Detail: ' + str(task.id) + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
                             l.save()
                             if has_role(request.user, [ROLE_INDIVIDUAL]):
                                 return redirect('IndividualHome')
@@ -1070,7 +1101,7 @@ def doPayment(request):
                                                t.SendAcc) + ', Received Account: ' + str(t.RecAcc))
                             l.save()
                             l = SystemLogs(CreatedDate=datetime.now(),
-                                           Detail='Added - Task Detail: ' + task.TaskDetail + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
+                                           Detail='Added - Task Detail: ' + str(task.id) + ', Message: ' + task.Message + ', Status: ' + task.Status + ', Assignee: ' + task.Assignee.Username)
                             l.save()
                             if has_role(request.user, [ROLE_INDIVIDUAL]):
                                 return redirect('IndividualHome')

@@ -43,12 +43,6 @@
                     <td>{{ account.AccStatus }}</td>
                     <td>{{account.Balance}}</td>
                     <td>
-                        <form id = "accountForm_{{account.id}}" action="Account" method="post">{% csrf_token %}
-                            <input type="hidden" name="AccNo" value="{{ account.AccNo }}" />
-                        <a href="#" onclick="document.forms['accountForm_{{account.id}}'].submit();" > {{ account.AccNo }} </a>
-                        </form>
-                    </td>
-                    <td>
                         <form method="post" action="CloseAccount"> {% csrf_token %}
                             <input type="hidden" name="AccNo" value="{{ account.AccNo }}" />
                             <button type="submit">Close Account</button>

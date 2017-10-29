@@ -17,6 +17,11 @@
 		            <td><input type="text" name="Amount" maxlength="30"/></td>
             </tr>
             <tr>
+		        <td>OTP (You have received on Mail): </td>
+		            <td><input type="text" name="OtpCode" maxlength="30"/></td>
+            </tr>
+            <tr>
+                <td><input type="hidden" name="OtpCodeH" value="{{ OTPCode }}"/></td>
                 <td> <input type="submit" value="Submit"> </td>
                 <td>
                     {% if Individual.UserType == 'INDIVIDUAL' %}

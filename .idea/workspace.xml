@@ -4,8 +4,10 @@
     <list default="true" id="6fc29a2c-f3b3-48f4-8cdd-3abba8a7ca56" name="Default" comment="">
       <change type="DELETED" beforePath="$PROJECT_DIR$/db.sqlite3" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/SecureBankingSystem/settings.py" afterPath="$PROJECT_DIR$/SecureBankingSystem/settings.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bank/media/_user3_PrivateKey" afterPath="$PROJECT_DIR$/bank/media/_user3_PrivateKey" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bank/views.py" afterPath="$PROJECT_DIR$/bank/views.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/templates/IndividualHome.html" afterPath="$PROJECT_DIR$/templates/IndividualHome.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/templates/debit.html" afterPath="$PROJECT_DIR$/templates/debit.html" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -16,21 +18,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/bank/models.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1054">
-              <caret line="64" column="0" lean-forward="false" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="views.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bank/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
-              <caret line="136" column="32" lean-forward="true" selection-start-line="136" selection-start-column="32" selection-end-line="136" selection-end-column="32" />
+            <state relative-caret-position="150">
+              <caret line="990" column="72" lean-forward="false" selection-start-line="990" selection-start-column="72" selection-end-line="990" selection-end-column="72" />
               <folding>
                 <element signature="e#0#51#0" expanded="true" />
               </folding>
@@ -38,11 +30,31 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="settings.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/SecureBankingSystem/settings.py">
+      <file leaf-file-name="models.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/bank/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="412">
-              <caret line="34" column="20" lean-forward="true" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
+            <state relative-caret-position="303">
+              <caret line="74" column="4" lean-forward="true" selection-start-line="74" selection-start-column="4" selection-end-line="74" selection-end-column="14" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="IndividualHome.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/templates/IndividualHome.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="52">
+              <caret line="33" column="41" lean-forward="true" selection-start-line="33" selection-start-column="41" selection-end-line="33" selection-end-column="41" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="debit.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/templates/debit.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="192">
+              <caret line="20" column="79" lean-forward="true" selection-start-line="20" selection-start-column="79" selection-end-line="20" selection-end-column="79" />
               <folding />
             </state>
           </provider>
@@ -60,12 +72,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>account</find>
-      <find>Task</find>
-      <find>Pers</find>
-      <find>date</find>
-      <find>data</find>
-      <find>PII</find>
       <find>Down</find>
       <find>IndividualIn</find>
       <find>Personal</find>
@@ -90,6 +96,12 @@
       <find>InternalUser(</find>
       <find>download</find>
       <find>AddInte</find>
+      <find>credit</find>
+      <find>rand</find>
+      <find>random</find>
+      <find>string</find>
+      <find>task.TaskDetail</find>
+      <find>task.id</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -115,8 +127,6 @@
         <option value="$PROJECT_DIR$/templates/PII.html" />
         <option value="$PROJECT_DIR$/templates/TransactionLookup.html" />
         <option value="$PROJECT_DIR$/templates/payment.html" />
-        <option value="$PROJECT_DIR$/templates/debit.html" />
-        <option value="$PROJECT_DIR$/templates/credit.html" />
         <option value="$PROJECT_DIR$/templates/transfer.html" />
         <option value="$PROJECT_DIR$/templates/TransactionInquiry.html" />
         <option value="$PROJECT_DIR$/templates/Account.html" />
@@ -135,9 +145,11 @@
         <option value="$PROJECT_DIR$/templates/ExternalUserRequest.html" />
         <option value="$PROJECT_DIR$/templates/AccountAccess.html" />
         <option value="$PROJECT_DIR$/bank/urls.py" />
-        <option value="$PROJECT_DIR$/templates/IndividualHome.html" />
         <option value="$PROJECT_DIR$/templates/AddAccount.html" />
         <option value="$PROJECT_DIR$/SecureBankingSystem/settings.py" />
+        <option value="$PROJECT_DIR$/templates/debit.html" />
+        <option value="$PROJECT_DIR$/templates/credit.html" />
+        <option value="$PROJECT_DIR$/templates/IndividualHome.html" />
         <option value="$PROJECT_DIR$/bank/views.py" />
       </list>
     </option>
@@ -172,7 +184,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -181,15 +192,11 @@
               <item name="FCSProject" type="b2602c69:ProjectViewProjectNode" />
               <item name="FCSProject" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="FCSProject" type="b2602c69:ProjectViewProjectNode" />
-              <item name="FCSProject" type="462c0819:PsiDirectoryNode" />
-              <item name="SecureBankingSystem" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -426,20 +433,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/debit.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="31" column="17" lean-forward="false" selection-start-line="31" selection-start-column="17" selection-end-line="31" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/transfer.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="341">
-          <caret line="43" column="17" lean-forward="false" selection-start-line="43" selection-start-column="17" selection-end-line="43" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/PII.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="341">
@@ -513,13 +506,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/Account.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="138">
-          <caret line="30" column="100" lean-forward="true" selection-start-line="30" selection-start-column="100" selection-end-line="30" selection-end-column="100" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/AddInternalUser.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="232">
@@ -555,24 +541,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/credit.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="129">
-          <caret line="15" column="20" lean-forward="true" selection-start-line="15" selection-start-column="20" selection-end-line="16" selection-end-column="78" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/ExternalUserLookup.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="314">
           <caret line="36" column="16" lean-forward="true" selection-start-line="23" selection-start-column="8" selection-end-line="36" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/IndividualHome.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="707">
-          <caret line="42" column="44" lean-forward="false" selection-start-line="42" selection-start-column="44" selection-end-line="42" selection-end-column="44" />
         </state>
       </provider>
     </entry>
@@ -597,26 +569,66 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/bank/models.py">
+    <entry file="file://$PROJECT_DIR$/SecureBankingSystem/settings.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1054">
-          <caret line="64" column="0" lean-forward="false" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
+        <state relative-caret-position="578">
+          <caret line="34" column="20" lean-forward="false" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/SecureBankingSystem/settings.py">
+    <entry file="file://$PROJECT_DIR$/templates/Account.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="412">
-          <caret line="34" column="20" lean-forward="true" selection-start-line="34" selection-start-column="20" selection-end-line="34" selection-end-column="20" />
+        <state relative-caret-position="51">
+          <caret line="15" column="13" lean-forward="false" selection-start-line="15" selection-start-column="13" selection-end-line="15" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/transfer.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="388">
+          <caret line="43" column="17" lean-forward="false" selection-start-line="43" selection-start-column="17" selection-end-line="43" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/credit.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="18" column="16" lean-forward="true" selection-start-line="18" selection-start-column="16" selection-end-line="18" selection-end-column="16" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/debit.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="20" column="79" lean-forward="true" selection-start-line="20" selection-start-column="79" selection-end-line="20" selection-end-column="79" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/IndividualHome.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="52">
+          <caret line="33" column="41" lean-forward="true" selection-start-line="33" selection-start-column="41" selection-end-line="33" selection-end-column="41" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bank/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="303">
+          <caret line="74" column="4" lean-forward="true" selection-start-line="74" selection-start-column="4" selection-end-line="74" selection-end-column="14" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bank/views.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="136" column="32" lean-forward="true" selection-start-line="136" selection-start-column="32" selection-end-line="136" selection-end-column="32" />
+        <state relative-caret-position="150">
+          <caret line="990" column="72" lean-forward="false" selection-start-line="990" selection-start-column="72" selection-end-line="990" selection-end-column="72" />
           <folding>
             <element signature="e#0#51#0" expanded="true" />
           </folding>
