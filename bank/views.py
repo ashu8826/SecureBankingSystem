@@ -1110,16 +1110,7 @@ def Downloadpage(request):
                 row = ""
                 for field in Transaction._meta.fields:
                     row += str(getattr(transaction, field.name)) + ","
-                    writer.writerow(row)
-
-            #t = loader.get_template('Account.html')
-            #c = Context({
-            #    'data': csv_data,
-            #    'Individual': individual,
-            #    'Account': account,
-            #    "Transactions": transactions
-            #})
-            #response.write(t.render(c))
+                writer.writerow(row)
             return response
         return render(request, 'home.html')
     return render(request, 'home.html')
@@ -1137,16 +1128,6 @@ def home(request):
         elif has_role(request.user, [ROLE_INDIVIDUAL]):
             return redirect('IndividualHome')
      return render(request, 'home.html')
-
-def whileCreateUser():
-    RSAkey = RSA.generate(1024)
-    binPrivKey = RSAkey.exportKey()
-    binPubKey = RSAkey.publickey().exportKey()
-    # user.PublicKey = binPubKey
-    # user.save()
-    #loc = abspath(dirname(__file__)) + '\media\_'+user.Username+'_PrivateKey'
-    #with open(loc, 'wb+') as pem_out:
-     #   pem_out.write(binPrivKey)
 
 def signup(request):
     if request.method == 'POST':
