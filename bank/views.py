@@ -410,81 +410,86 @@ def TAuthorize(request):
                 sendAccount = BankAccount.objects.get(AccNo=transaction.SendAcc)
                 recvAccount = BankAccount.objects.get(AccNo=transaction.RecAcc)
                 if sendAccount.AccStatus == "active" and recvAccount.AccStatus == "active":
-                    if transaction.TransType == "credit":
-                        recvAccount.Balance = float(sendAccount.Balance) + float(transaction.Amount)
-                        recvAccount.save()
-                        transaction.TransStatus = "approved"
-                        transaction.save()
-                        l = SystemLogs(CreatedDate=datetime.now(),
-                                       Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
-                                           transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
-                                           transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
-                        l.save()
-                        l = SystemLogs(CreatedDate=datetime.now(),
-                                       Detail='Updated - ' + str(transaction.Amount) + ' credited to account ' + str(recvAccount.AccNo))
-                        l.save()
-                    elif transaction.TransType == "debit":
-                        if float(recvAccount.Balance) >= float(transaction.Amount):
-                            sendAccount.Balance = float(recvAccount.Balance) - float(transaction.Amount)
-                            sendAccount.save()
-                            transaction.TransStatus = "approved"
-                            transaction.save()
-                            l = SystemLogs(CreatedDate=datetime.now(),
-                                           Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
-                                               transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
-                                               transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
-                            l.save()
-                            l = SystemLogs(CreatedDate=datetime.now(),
-                                           Detail='Updated - ' + str(transaction.Amount) + ' debited from account ' + str(
-                                               sendAccount.AccNo))
-                            l.save()
-                        else:
-                            transaction.TransStatus = "declined"
-                            transaction.save()
-                            l = SystemLogs(CreatedDate=datetime.now(),
-                                           Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
-                                               transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
-                                               transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
-                            l.save()
-                            return render(request, 'TransactionLookup.html',
-                                          {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
-                                           "Message2": "Transaction Declined"})
-                    else:
-                        if float(sendAccount.Balance) >= float(transaction.Amount):
-                            sendAccount.Balance = float(sendAccount.Balance) - float(transaction.Amount)
-                            sendAccount.save()
-                            recvAccount.Balance = float(recvAccount.Balance) + float(transaction.Amount)
+                    if transaction.TransStatus != "approved" and transaction.TransStatus != "declined":
+                        if transaction.TransType == "credit":
+                            recvAccount.Balance = float(sendAccount.Balance) + float(transaction.Amount)
                             recvAccount.save()
                             transaction.TransStatus = "approved"
                             transaction.save()
                             l = SystemLogs(CreatedDate=datetime.now(),
+                                       Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                           transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                           transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                            l.save()
+                            l = SystemLogs(CreatedDate=datetime.now(),
+                                       Detail='Updated - ' + str(transaction.Amount) + ' credited to account ' + str(recvAccount.AccNo))
+                            l.save()
+                        elif transaction.TransType == "debit":
+                            if float(recvAccount.Balance) >= float(transaction.Amount):
+                                sendAccount.Balance = float(recvAccount.Balance) - float(transaction.Amount)
+                                sendAccount.save()
+                                transaction.TransStatus = "approved"
+                                transaction.save()
+                                l = SystemLogs(CreatedDate=datetime.now(),
                                            Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
                                                transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
                                                transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
-                            l.save()
-                            l = SystemLogs(CreatedDate=datetime.now(),
-                                           Detail='Updated - ' + str(transaction.Amount) + ' deducted from account ' + str(
+                                l.save()
+                                l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - ' + str(transaction.Amount) + ' debited from account ' + str(
                                                sendAccount.AccNo))
-                            l.save()
-                            l = SystemLogs(CreatedDate=datetime.now(),
-                                           Detail='Updated - ' + str(transaction.Amount) + ' added in account ' + str(
-                                               recvAccount.AccNo))
-                            l.save()
-                        else:
-                            transaction.TransStatus = "declined"
-                            transaction.save()
-                            l = SystemLogs(CreatedDate=datetime.now(),
+                                l.save()
+                            else:
+                                transaction.TransStatus = "declined"
+                                transaction.save()
+                                l = SystemLogs(CreatedDate=datetime.now(),
                                            Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
                                                transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
                                                transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
-                            l.save()
-                            return render(request, 'TransactionLookup.html',
+                                l.save()
+                                return render(request, 'TransactionLookup.html',
                                           {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
                                            "Message2": "Transaction Declined"})
-                    if has_role(request.user, [ROLE_MANAGER]):
-                        return redirect('ManagerHome')
+                        else:
+                            if float(sendAccount.Balance) >= float(transaction.Amount):
+                                sendAccount.Balance = float(sendAccount.Balance) - float(transaction.Amount)
+                                sendAccount.save()
+                                recvAccount.Balance = float(recvAccount.Balance) + float(transaction.Amount)
+                                recvAccount.save()
+                                transaction.TransStatus = "approved"
+                                transaction.save()
+                                l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                               transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                               transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                                l.save()
+                                l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - ' + str(transaction.Amount) + ' deducted from account ' + str(
+                                               sendAccount.AccNo))
+                                l.save()
+                                l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - ' + str(transaction.Amount) + ' added in account ' + str(
+                                               recvAccount.AccNo))
+                                l.save()
+                            else:
+                                transaction.TransStatus = "declined"
+                                transaction.save()
+                                l = SystemLogs(CreatedDate=datetime.now(),
+                                           Detail='Updated - Transaction Type: ' + transaction.TransType + ', Amount:' + str(
+                                               transaction.Amount) + ', Status: ' + transaction.TransType + ', Send Account: ' + str(
+                                               transaction.SendAcc) + ', Received Account: ' + str(transaction.RecAcc))
+                                l.save()
+                                return render(request, 'TransactionLookup.html',
+                                          {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
+                                           "Message2": "Transaction Declined"})
+                        if has_role(request.user, [ROLE_MANAGER]):
+                            return redirect('ManagerHome')
+                        else:
+                            return redirect('EmployeeHome')
                     else:
-                        return redirect('EmployeeHome')
+                        return render(request, 'TransactionLookup.html',
+                                      {"Individual": individual, "AdminRequest": "POST", "Transaction": transaction,
+                                       "Message2": "Already Approved or Declined!"})
                 else:
                     transaction.TransStatus = "declined"
                     transaction.save()
